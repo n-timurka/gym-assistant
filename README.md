@@ -19,6 +19,9 @@ Gym Assistant is a modern fitness tracking application built with **Ionic Vue** 
 -   **Build Tool**: Vite
 -   **State Management**: Vue Composition API
 
+## Demo
+You can check the app, using this [link](https://gym-assistant-2e9f7.web.app/)
+
 ## 📋 Prerequisites
 
 Before you begin, ensure you have the following installed:
@@ -31,7 +34,7 @@ Before you begin, ensure you have the following installed:
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/yourusername/gym-assistant.git
+    git clone https://github.com/n-timurka/gym-assistant.git
     cd gym-assistant
     ```
 
