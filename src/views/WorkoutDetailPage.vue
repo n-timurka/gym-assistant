@@ -151,7 +151,8 @@ const {
 
 const { 
   documents: weekPlans,
-  subscribe: subscribeWeekPlans
+  subscribe: subscribeWeekPlans,
+  update: updateWeekPlan
 } = useFirebase<WeekPlan>(Collections.WEEK_PLANS);
 
 const {
@@ -550,6 +551,24 @@ const getLatestProgressWeight = async (exerciseId: string): Promise<number> => {
   return 0;
 };
 
+const updateWeekPlanWithCompletedExercises = async () => {
+  if (!currentWeekPlan.value || !workout.value) return;
+  
+  // Find exercises that have at least one completed set
+  const completedInWorkout = workout.value.exercises
+    .filter(ex => ex.sets.some(s => s.isCompleted))
+    .map(ex => ex.exerciseId);
+      
+  if (completedInWorkout.length === 0) return;
+  
+  const existingCompleted = new Set(currentWeekPlan.value.completed || []);
+  completedInWorkout.forEach(id => existingCompleted.add(id));
+  
+  await updateWeekPlan(currentWeekPlan.value.id, {
+    completed: Array.from(existingCompleted)
+  });
+};
+
 const endTraining = async () => {
   if (!workout.value) return;
   
@@ -575,6 +594,8 @@ const endTraining = async () => {
           
           await saveProgressRecords();
           
+          await updateWeekPlanWithCompletedExercises();
+
           await updateWorkout(workoutId, { 
             status: WorkoutStatus.COMPLETED,
             endTime
@@ -641,6 +662,20 @@ const handleSwapExercise = (index: number) => {
     showAddModal.value = true;
 }
 
+const updateWeekPlanSwap = async (oldExerciseId: string, newExerciseId: string) => {
+    if (!currentWeekPlan.value) return;
+    
+    const exercises = [...currentWeekPlan.value.exercises];
+    const index = exercises.findIndex(id => String(id) === String(oldExerciseId));
+    
+    if (index !== -1) {
+        exercises[index] = newExerciseId;
+        await updateWeekPlan(currentWeekPlan.value.id, {
+            exercises
+        });
+    }
+}
+
 const addExerciseToWorkout = async (exerciseId: string | number) => {
   if (!workout.value) return;
   
@@ -672,6 +707,9 @@ const addExerciseToWorkout = async (exerciseId: string | number) => {
   
   if (swappingExerciseIndex.value !== null) {
       // Swap logic
+      const oldExerciseId = workout.value.exercises[swappingExerciseIndex.value].exerciseId;
+      await updateWeekPlanSwap(oldExerciseId, String(exerciseId));
+      
       workout.value.exercises.splice(swappingExerciseIndex.value, 1, newExercise);
   } else {
       // Add logic

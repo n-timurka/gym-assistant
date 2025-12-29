@@ -44,10 +44,7 @@
         </div>
 
         <div v-if="selectedSegment === 'plan'">
-          <WeekPlanComponent 
-            :weekStart="currentWeekStart"
-            :workouts="workouts"
-          />
+          <WeekPlanComponent :weekStart="currentWeekStart" />
         </div>
 
         <!-- Real-time Status -->
@@ -219,8 +216,6 @@ const addWorkout = async () => {
     date: selectedDate.value,
     exercises: [],
     status: WorkoutStatus.PLANNED,
-    // startTime: undefined,
-    // endTime: undefined
   };
 
   await create(workoutData);
@@ -264,67 +259,63 @@ const fillWorkoutFromWeekPlan = async (workoutId: string) => {
     .map(id => exercises.value.find(e => String(e.id) === String(id)))
     .filter(e => !!e) as Exercise[];
   
-  // Determine exercises already used this week
-  const usedExerciseIds = new Set<string>();
+  const { exercisesPerWorkout } = weekPlan;
+  
+  if (!exercisesPerWorkout) {
+    alert('This week plan does not have "Exercises per Workout" setting. Please re-apply a template or set it manually.');
+    return;
+  }
+
+  // Get all workouts for this week to determine order
   const start = new Date(currentWeekStart.value);
   const end = getEndOfWeek(start);
   
-  // Filter other workouts in this week
   const weeklyWorkouts = workouts.value.filter(w => {
-    if (w.id === workoutId) return false; // Skip current workout
     if (!w.date) return false;
     const wDate = new Date(w.date);
     return wDate >= start && wDate <= end;
   });
 
-  // Collect used IDs
-  weeklyWorkouts.forEach(w => {
-    w.exercises.forEach(e => usedExerciseIds.add(String(e.exerciseId)));
+  // Sort by date/creation to find index
+  // Assuming 'date' is the planned date. If multiple on same day, maybe rely on createdAt if available, or just ID.
+  // For now, sorting by date.
+  weeklyWorkouts.sort((a, b) => {
+    const da = new Date(a.date).getTime();
+    const db = new Date(b.date).getTime();
+    return da - db;
   });
 
-  // Note: We don't filter `plannedExercises` immediately because we want to know if plan exists.
-  // We will filter during category selection logic below.
-
-  if (plannedExercises.length === 0) {
-    alert('No exercises found in the week plan.');
+  const workoutIndex = weeklyWorkouts.findIndex(w => w.id === workoutId);
+  
+  if (workoutIndex === -1) {
+    console.error('Current workout not found in weekly list');
     return;
   }
-  
-  // Group exercises by category and pick one from each, PREFERRING unused ones
-  const exercisesByCategory: Record<string, Exercise> = {};
-  
-  // First pass: Try to find unused exercises for each category
-  plannedExercises.forEach(ex => {
-    if (usedExerciseIds.has(String(ex.id))) return; // Skip used for now
-    
-    if (!exercisesByCategory[ex.category]) {
-      exercisesByCategory[ex.category] = ex;
-    }
-  });
 
-  // Second pass: If a category is missing (because all were used), do we want to reuse?
-  // User request: "excluding those, who already a part of other workouts"
-  // STRICT interpretation: Do NOT include them.
-  // So we stop here. If all chest exercises are done, no chest exercise is added today.
-  
-  if (Object.keys(exercisesByCategory).length === 0) {
-     const remainingCount = plannedExercises.filter(ex => !usedExerciseIds.has(String(ex.id))).length;
-     if (remainingCount === 0 && plannedExercises.length > 0) {
-        alert('All planned exercises for this week have already been added to other workouts.');
-        return;
-     }
+  const startIndex = workoutIndex * exercisesPerWorkout;
+  const endIndex = startIndex + exercisesPerWorkout;
+
+  const exerciseIdsToAdd = weekPlan.exercises.slice(startIndex, endIndex);
+
+  if (exerciseIdsToAdd.length === 0) {
+    alert(`No exercises found for this workout (Index: ${workoutIndex + 1}). Check your week plan.`);
+    return;
   }
-  
+
+  // Resolve exercises
+  const resolvedExercises = exerciseIdsToAdd
+    .map(id => exercises.value.find(e => String(e.id) === String(id)))
+    .filter(e => !!e) as Exercise[];
+
   // Get latest progress weight for each exercise
   const workoutExercises: WorkoutExercise[] = [];
   
-  for (const [index, ex] of Object.values(exercisesByCategory).entries()) {
+  for (const [index, ex] of resolvedExercises.entries()) {
     let weight = 0;
     
     // Query latest progress for this exercise and current user
     if (currentUser.value) {
       try {
-        // Query by exerciseId string instead of DocumentReference for more reliable results
         const progressRecords = await getProgressRecords({
           where: [
             { field: 'userId', operator: '==', value: currentUser.value.uid },
@@ -332,7 +323,6 @@ const fillWorkoutFromWeekPlan = async (workoutId: string) => {
           ]
         });
         
-        // Sort in memory
         progressRecords.sort((a, b) => {
           const dateA = a.date instanceof Date ? a.date.getTime() : new Date(a.date).getTime();
           const dateB = b.date instanceof Date ? b.date.getTime() : new Date(b.date).getTime();
@@ -353,7 +343,7 @@ const fillWorkoutFromWeekPlan = async (workoutId: string) => {
       sets: [
         { weight, reps: 10, isCompleted: false },
         { weight, reps: 10, isCompleted: false },
-        { weight, reps: 10, isCompleted: false }
+        { weight, reps: 10, isCompleted: false },
       ],
       order: index
     });
@@ -394,7 +384,7 @@ const setupWorkoutSubscription = () => {
 }
 
 // Watch for auth changes
-watch(currentUser, (newUser) => {
+watch(currentUser, () => {
     setupWorkoutSubscription();
 });
 

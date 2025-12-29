@@ -533,7 +533,19 @@ const exercises: Omit<Exercise, "id">[] = [
     name: "Seated Chest Press",
     category: ExerciseCategory.CHEST,
     type: ExerciseType.MACHINES,
-    description: "",
+    description: "A seated chest press that targets the chest muscles.",
+    howTo: [
+      "Sit on a bench with dumbbells in your hands.",
+      "Press the dumbbells upward toward the ceiling.",
+      "Lower the dumbbells back down to the starting position."
+    ],
+    primaryMuscles: ["Chest"],
+    secondaryMuscles: ["Shoulders"],
+    tips: [
+      "Keep elbows stable.",
+      "Focus on full extension.",
+      "Avoid arching the lower back."
+    ]
   },
   {
     extId: "28",
@@ -1037,7 +1049,7 @@ const exercises: Omit<Exercise, "id">[] = [
   },
   {
     extId: "53",
-    name: "Preacher Curl",
+    name: "Incline Dumbbell Bicep Curl",
     category: ExerciseCategory.BICEPS,
     type: ExerciseType.FREE_WEIGHTS,
     description: "A supported curl exercise that isolates the biceps and limits momentum.",
@@ -1215,6 +1227,45 @@ const exercises: Omit<Exercise, "id">[] = [
       "Engage glutes."
     ]
   },
+  {
+    extId: "62",
+    name: "Seated Overhead Dumbbell Press",
+    category: ExerciseCategory.SHOULDERS,
+    type: ExerciseType.FREE_WEIGHTS,
+    description: "A seated overhead press that targets the shoulders and chest.",
+    howTo: [
+      "Sit on a bench with dumbbells in your hands.",
+      "Press the dumbbells upward toward the ceiling.",
+      "Lower the dumbbells back down to the starting position."
+    ],
+    primaryMuscles: ["Anterior Deltoids", "Posterior Deltoids", "Triceps Brachii"],
+    secondaryMuscles: ["Shoulders", "Chest"],
+    tips: [
+      "Keep elbows pointing forward.",
+      "Use moderate weight.",
+      "Focus on squeezing shoulders."
+    ]
+  },
+  {
+    extId: "63",
+    name: "Cable Back Pullover",
+    category: ExerciseCategory.BACK,
+    type: ExerciseType.CABLE_MACHINE,
+    description: "A cable-based back exercise that targets the back muscles.",
+    howTo: [
+      "Attach a rope to a high pulley.",
+      "Face away from the machine and hold the rope overhead.",
+      "Extend elbows until arms are straight.",
+      "Return slowly to the bent-arm position."
+    ],
+    primaryMuscles: ["Triceps Brachii"],
+    secondaryMuscles: ["Shoulders"],
+    tips: [
+      "Keep elbows stable.",
+      "Focus on full extension.",
+      "Avoid arching the lower back."
+    ]
+  }
 ];
 
 export { exercises };

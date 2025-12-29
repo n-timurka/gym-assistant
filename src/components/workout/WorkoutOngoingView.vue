@@ -66,7 +66,7 @@
         </div>
 
         <!-- Segments -->
-        <div class="exercise-details ion-margin-bottom">
+        <div class="exercise-details">
             <ion-segment v-model="selectedTab" mode="ios">
                 <ion-segment-button value="sets">
                     <ion-label>Sets</ion-label>
@@ -85,6 +85,7 @@
                   :exercise-category="getExerciseCategory(currentExercise.exerciseId)"
                   :is-workout-started="true"
                   :show-header="false"
+                  :show-info="false"
                   :show-delete="false"
                   :show-reorder="false"
                   @add-set="$emit('add-set', currentExerciseIndex)"

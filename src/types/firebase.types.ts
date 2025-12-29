@@ -127,6 +127,8 @@ export interface WeekPlan extends FirestoreDocument {
     userId: string;
     weekStart: string; // ISO string of the Monday of the week
     exercises: string[]; // Array of exercise IDs
+    completed?: string[]; // Array of completed exercise IDs
+    exercisesPerWorkout?: number; // Number of exercises to assign per workout
 }
 
 // Query options

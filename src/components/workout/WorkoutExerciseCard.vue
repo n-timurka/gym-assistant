@@ -15,7 +15,7 @@
     
     <ion-card-content v-show="!isCollapsed">
       <!-- Info Block -->
-      <div class="info-block ion-margin-bottom">
+      <div v-if="showInfo" class="info-block ion-margin-bottom">
         <div class="info-image-container">
             <img v-if="!imageError && exerciseImage" :src="exerciseImage" @error="imageError = true" class="info-image" />
             <div v-else class="placeholder-image">
@@ -105,6 +105,7 @@ const props = withDefaults(defineProps<{
   isWorkoutStarted: boolean;
   exerciseCategory?: ExerciseCategory;
   showHeader?: boolean;
+  showInfo?: boolean;
   showDelete?: boolean;
   showReorder?: boolean;
   isCollapsible?: boolean;
@@ -112,6 +113,7 @@ const props = withDefaults(defineProps<{
   showHeader: true,
   showDelete: true,
   showReorder: true,
+  showInfo: true,
   isCollapsible: false
 });
 

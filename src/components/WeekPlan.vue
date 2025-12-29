@@ -7,16 +7,9 @@
         <ion-card-subtitle>{{ overallProgress }}% Completed</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <ion-progress-bar :value="overallProgress / 100" color="primary"></ion-progress-bar>
+        <ion-progress-bar :value="overallProgress / 100" color="primary" />
       </ion-card-content>
     </ion-card>
-
-    <!-- Actions -->
-    <div class="actions-container ion-padding-horizontal" v-if="plannedExercises.length === 0">
-      <ion-button expand="block" fill="outline" @click="applyTemplate" :disabled="loading">
-        Load from Template (Full Body 3)
-      </ion-button>
-    </div>
 
     <!-- Category Progress & List -->
     <div class="categories-list ion-padding">
@@ -25,7 +18,10 @@
           <h3>{{ category.name }}</h3>
           <span class="category-progress">{{ category.progress }}%</span>
         </div>
-        <ion-progress-bar :value="category.progress / 100" :color="getCategoryColor(category.name)"></ion-progress-bar>
+        <ion-progress-bar
+          :value="category.progress / 100"
+          :color="getCategoryColor(category.name)"
+        />
         
         <ion-list>
           <ion-item v-for="exercise in category.exercises" :key="exercise.id">
@@ -33,7 +29,7 @@
               :icon="checkmarkCircle" 
               slot="start" 
               :color="isExerciseCompleted(exercise.id) ? 'success' : 'medium'"
-            ></ion-icon>
+            />
             <ion-label>
               <h2>{{ exercise.name }}</h2>
               <p>{{ exercise.type }}</p>
@@ -41,10 +37,11 @@
             <ion-button 
               slot="end" 
               fill="clear" 
-              color="danger" 
+              color="danger"
+              :disabled="isExerciseCompleted(exercise.id)"
               @click="removeExerciseFromPlan(exercise.id)"
             >
-              <ion-icon slot="icon-only" :icon="trashOutline"></ion-icon>
+              <ion-icon slot="icon-only" :icon="trashOutline" />
             </ion-button>
           </ion-item>
         </ion-list>
@@ -59,7 +56,7 @@
         fill="clear" 
         @click="clearPlan"
       >
-        <ion-icon slot="start" :icon="trashOutline"></ion-icon>
+        <ion-icon slot="start" :icon="trashOutline" />
         Clear Plan
       </ion-button>
     </div>
@@ -92,11 +89,69 @@
       </ion-content>
     </ion-modal>
 
+    <!-- Templates Modal -->
+    <ion-modal :is-open="showTemplatesModal" @didDismiss="showTemplatesModal = false">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Select Template</ion-title>
+          <ion-buttons slot="end">
+            <ion-button @click="showTemplatesModal = false">Close</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-list>
+          <ion-item 
+            v-for="(template, index) in templates" 
+            :key="index" 
+            button 
+            @click="applyTemplate(template)"
+            class="template-item"
+          >
+            <ion-label>
+              <h2>{{ template.title }}</h2>
+              <p v-if="template.description" class="template-description">{{ template.description }}</p>
+              <p>{{ template.exercises.length }} Exercises</p>
+            </ion-label>
+            <ion-button 
+              slot="end" 
+              fill="clear" 
+              @click.stop="openExercisesPopover($event, template.exercises)"
+            >
+              <ion-icon slot="icon-only" :icon="helpCircleOutline" color="primary"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+
+        <ion-popover 
+          :is-open="showExercisesPopover" 
+          :event="popoverEvent" 
+          @didDismiss="showExercisesPopover = false"
+        >
+          <ion-content class="ion-padding">
+            <ion-list lines="none">
+              <ion-item v-for="(name, i) in currentTemplateExercises" :key="i">
+                <ion-label>{{ name }}</ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ion-popover>
+      </ion-content>
+    </ion-modal>
+
     <!-- FAB -->
     <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="fixed-fab">
-      <ion-fab-button @click="showAddExerciseModal = true">
+      <ion-fab-button>
         <ion-icon :icon="addOutline"></ion-icon>
       </ion-fab-button>
+      <ion-fab-list side="top">
+        <ion-fab-button @click="showAddExerciseModal = true" title="Add Exercise">
+            <ion-icon :icon="addOutline"></ion-icon>
+        </ion-fab-button>
+        <ion-fab-button @click="showTemplatesModal = true" title="Load Template">
+            <ion-icon :icon="documentOutline"></ion-icon>
+        </ion-fab-button>
+      </ion-fab-list>
     </ion-fab>
   </div>
 </template>
@@ -124,24 +179,24 @@ import {
   IonSearchbar,
   IonFab,
   IonFabButton,
+  IonFabList,
+  IonPopover,
   alertController
 } from '@ionic/vue';
-import { checkmarkCircle, addOutline, trashOutline } from 'ionicons/icons';
+import { checkmarkCircle, addOutline, trashOutline, documentOutline, helpCircleOutline } from 'ionicons/icons';
 import { useFirebase } from '@/composables/useFirebase';
 import { useAuth } from '@/composables/useAuth';
-import { Collections, type WeekPlan, type Workout, type Exercise, ExerciseCategory, WorkoutStatus } from '@/types/firebase.types';
+import { Collections, type WeekPlan, type Exercise, ExerciseCategory } from '@/types/firebase.types';
 import { templates } from '@/data/templates';
 import { exercises as staticExercises } from '@/data/exercises';
 
 const props = defineProps<{
   weekStart: Date;
-  workouts: Workout[]; // Workouts for the current week to calculate progress
 }>();
 
 const { currentUser } = useAuth();
 const {
   documents: weekPlans,
-  loading,
   create,
   update,
   subscribe
@@ -153,6 +208,20 @@ const {
 } = useFirebase<Exercise>(Collections.EXERCISES);
 
 const showAddExerciseModal = ref(false);
+const showExercisesPopover = ref(false);
+const popoverEvent = ref<Event | null>(null);
+const currentTemplateExercises = ref<string[]>([]);
+
+function openExercisesPopover(event: Event, templateExerciseIds: number[]) {
+  popoverEvent.value = event;
+  currentTemplateExercises.value = templateExerciseIds.map(id => {
+    const staticEx = staticExercises.find(e => Number(e.extId) === id);
+    return staticEx ? staticEx.name : `Unknown Exercise (${id})`;
+  });
+  showExercisesPopover.value = true;
+}
+
+const showTemplatesModal = ref(false);
 const searchQuery = ref('');
 
 // Get the current week's plan
@@ -213,25 +282,10 @@ const filteredExercises = computed(() => {
   );
 });
 
-// Check if an exercise is completed in any of the week's completed workouts
-// Check if an exercise is completed in any of the week's completed workouts
+// Check if an exercise is completed based on the stored completed array
 function isExerciseCompleted(exerciseId: string | number) {
-  // Calculate end of the week for the current plan
-  const planWeekStart = new Date(props.weekStart);
-  // Reset time to start of day
-  planWeekStart.setHours(0, 0, 0, 0);
-  
-  const planWeekEnd = new Date(planWeekStart);
-  planWeekEnd.setDate(planWeekEnd.getDate() + 6);
-  planWeekEnd.setHours(23, 59, 59, 999);
-
-  return props.workouts
-    .filter(w => {
-      if (w.status !== WorkoutStatus.COMPLETED) return false;
-      const wDate = new Date(w.date);
-      return wDate >= planWeekStart && wDate <= planWeekEnd;
-    })
-    .some(w => w.exercises.some(e => String(e.exerciseId) === String(exerciseId)));
+  if (!currentWeekPlan.value || !currentWeekPlan.value.completed) return false;
+  return currentWeekPlan.value.completed.includes(String(exerciseId));
 }
 
 // Add exercise to plan
@@ -241,11 +295,10 @@ async function addExerciseToPlan(exerciseId: string | number) {
   if (currentWeekPlan.value) {
     // Update existing plan
     const currentExercises = [...currentWeekPlan.value.exercises];
-    if (!currentExercises.includes(idStr)) {
-      await update(currentWeekPlan.value.id, {
-        exercises: [...currentExercises, idStr]
-      });
-    }
+    // Allow duplicates as per requirements
+    await update(currentWeekPlan.value.id, {
+      exercises: [...currentExercises, idStr]
+    });
   } else {
     // Create new plan
     if (!currentUser.value) return;
@@ -258,13 +311,18 @@ async function addExerciseToPlan(exerciseId: string | number) {
   showAddExerciseModal.value = false;
 }
 
+// Format template name for display (Not used in new design but keeping if needed or can remove)
+function formatTemplateName(name: string) {
+  return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
+
 // Apply template
-// Apply template
-async function applyTemplate() {
-  const templateIds = templates.fullbody_3;
+async function applyTemplate(template: typeof templates[0]) {
+  const templateIds = template.exercises;
   
   // Map numeric template IDs to Firestore UUIDs by name
-  const firestoreIds = new Set<string>();
+  // Note: We allow duplicates now as per requirements
+  const idsToSave: string[] = [];
   
   templateIds.forEach(templateId => {
     // Find name from static data
@@ -274,11 +332,9 @@ async function applyTemplate() {
     // Find corresponding Firestore exercise ID
     const firestoreExercise = exercises.value.find(e => e.name === staticExercise.name);
     if (firestoreExercise) {
-      firestoreIds.add(firestoreExercise.id);
+      idsToSave.push(firestoreExercise.id);
     }
   });
-
-  const idsToSave = Array.from(firestoreIds);
 
   if (idsToSave.length === 0) {
     console.warn('No matching exercises found for template');
@@ -286,21 +342,26 @@ async function applyTemplate() {
   }
   
   if (currentWeekPlan.value) {
-    // Merge with existing
-    const currentExercises = new Set(currentWeekPlan.value.exercises);
-    idsToSave.forEach(id => currentExercises.add(id));
+    // Merge with existing - user said "Same exercise several times", so duplicates allowed.
+    // However, if we append, we might just append.
+    // Let's append to existing exercises.
+    const currentExercises = [...currentWeekPlan.value.exercises, ...idsToSave];
     
     await update(currentWeekPlan.value.id, {
-      exercises: Array.from(currentExercises)
+      exercises: currentExercises,
+      exercisesPerWorkout: template.exercisesPerWorkout
     });
   } else {
     if (!currentUser.value) return;
     await create({
       userId: currentUser.value.uid,
       weekStart: props.weekStart.toISOString(),
-      exercises: idsToSave
+      exercises: idsToSave,
+      completed: [],
+      exercisesPerWorkout: template.exercisesPerWorkout
     });
   }
+  showTemplatesModal.value = false;
 }
 
 // Remove exercise from plan
@@ -308,10 +369,9 @@ async function removeExerciseFromPlan(exerciseId: string | number) {
   if (!currentWeekPlan.value) return;
   
   const idStr = String(exerciseId);
-  const currentExercises = currentWeekPlan.value.exercises.filter(id => id !== idStr);
   
   await update(currentWeekPlan.value.id, {
-    exercises: currentExercises
+    exercises: currentWeekPlan.value.exercises.filter(id => id !== idStr)
   });
 }
 
