@@ -1265,6 +1265,66 @@ const exercises: Omit<Exercise, "id">[] = [
       "Focus on full extension.",
       "Avoid arching the lower back."
     ]
+  },
+  {
+    extId: "64",
+    name: "Reverse Fly Machine",
+    category: ExerciseCategory.BACK,
+    type: ExerciseType.MACHINES,
+    description: "A cable-based back exercise that targets the back muscles.",
+    howTo: [
+      "Attach a rope to a high pulley.",
+      "Face away from the machine and hold the rope overhead.",
+      "Extend elbows until arms are straight.",
+      "Return slowly to the bent-arm position."
+    ],
+    primaryMuscles: ["Triceps Brachii"],
+    secondaryMuscles: ["Shoulders"],
+    tips: [
+      "Keep elbows stable.",
+      "Focus on full extension.",
+      "Avoid arching the lower back."
+    ]
+  },
+  {
+    extId: "65",
+    name: "Hip Thrust Machine",
+    category: ExerciseCategory.LEGS,
+    type: ExerciseType.MACHINES,
+    description: "A cable-based back exercise that targets the back muscles.",
+    howTo: [
+      "Attach a rope to a high pulley.",
+      "Face away from the machine and hold the rope overhead.",
+      "Extend elbows until arms are straight.",
+      "Return slowly to the bent-arm position."
+    ],
+    primaryMuscles: ["Triceps Brachii"],
+    secondaryMuscles: ["Shoulders"],
+    tips: [
+      "Keep elbows stable.",
+      "Focus on full extension.",
+      "Avoid arching the lower back."
+    ]
+  },
+  {
+    extId: "66",
+    name: "Standing Cable Kickback",
+    category: ExerciseCategory.LEGS,
+    type: ExerciseType.CABLE_MACHINE,
+    description: "A cable-based back exercise that targets the back legs muscles.",
+    howTo: [
+      "Attach a rope to a high pulley.",
+      "Face away from the machine and hold the rope overhead.",
+      "Extend elbows until arms are straight.",
+      "Return slowly to the bent-arm position."
+    ],
+    primaryMuscles: ["Quadriceps"],
+    secondaryMuscles: ["Hamstrings"],
+    tips: [
+      "Keep elbows stable.",
+      "Focus on full extension.",
+      "Avoid arching the lower back."
+    ]
   }
 ];
 
