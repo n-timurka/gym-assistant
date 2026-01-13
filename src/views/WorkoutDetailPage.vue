@@ -80,13 +80,6 @@
       </ion-fab>
     </ion-content>
 
-    <!-- Timer Overlay -->
-    <rest-timer-overlay
-      v-if="isTimerRunning"
-      :remaining-seconds="remainingSeconds"
-      @stop-timer="stopRestTimer"
-    ></rest-timer-overlay>
-
     <ion-footer>
       <ion-toolbar>
         <ion-button
@@ -126,6 +119,7 @@ import {
 import { addOutline } from 'ionicons/icons';
 import { useFirebase } from '@/composables/useFirebase';
 import { useAuth } from '@/composables/useAuth';
+import { useTimer } from '@/composables/useTimer';
 import { Collections, type Workout, type WeekPlan, type WorkoutExercise, type Exercise, type ExerciseSet, type Progress, WorkoutStatus, ExerciseCategory } from '@/types/firebase.types';
 import { doc } from 'firebase/firestore';
 import { db } from '@/firebase.config';
@@ -133,7 +127,7 @@ import { db } from '@/firebase.config';
 // Components
 import WorkoutHeader from '@/components/workout/WorkoutHeader.vue';
 import AddExerciseModal from '@/components/workout/AddExerciseModal.vue';
-import RestTimerOverlay from '@/components/workout/RestTimerOverlay.vue';
+// RestTimerOverlay moved to App.vue
 import WorkoutPlannedView from '@/components/workout/WorkoutPlannedView.vue';
 import WorkoutOngoingView from '@/components/workout/WorkoutOngoingView.vue';
 import WorkoutCompletedView from '@/components/workout/WorkoutCompletedView.vue';
@@ -177,85 +171,27 @@ const showAddModal = ref(false);
 const swappingExerciseIndex = ref<number | null>(null);
 
 // Timer State
+const { startTimer, stopTimer, isTimerRunning } = useTimer();
 const restTimeSeconds = ref(120); // Default 2 minutes
-const remainingSeconds = ref(120);
-const isTimerRunning = ref(false);
-const timerTargetTime = ref<number | null>(null);
-let timerInterval: any = null;
 let currentActionSheet: HTMLIonActionSheetElement | null = null;
+const unsubscribeFunctions: Array<() => void> = [];
 
 // --- Timer Logic ---
-
-// Document visibility handler to ensure timer updates immediately when returning to app
-const handleVisibilityChange = () => {
-  if (document.visibilityState === 'visible' && isTimerRunning.value && timerTargetTime.value) {
-    updateTimer();
-  }
-};
-
-const updateTimer = () => {
-  if (!timerTargetTime.value) return;
-  
-  const now = Date.now();
-  const diff = Math.ceil((timerTargetTime.value - now) / 1000);
-  remainingSeconds.value = Math.max(0, diff);
-  
-  if (diff <= 0) {
-    stopRestTimer();
-    // Play sound or vibrate (optional)
-    
-    // Show completion toast
-    toastController.create({
-      message: 'Rest time is over! Get back to work!',
-      duration: 3000,
-      position: 'top',
-      color: 'success',
-      icon: 'alarm-outline'
-    }).then(t => t.present());
-  }
-};
-
-const stopRestTimer = () => {
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
-  }
-  isTimerRunning.value = false;
-  timerTargetTime.value = null;
-  remainingSeconds.value = restTimeSeconds.value;
-};
-
-// No longer needed formatTime here as it's in the component, but we keep it if logic needs it? 
-// Actually RestTimerOverlay handles formatting.
+// Global timer handles updates and completion
 
 const startRestTimer = async () => {
-  if (isTimerRunning.value) return;
-  
-  // Set target time based on CURRENT restTimeSeconds
-  const durationMs = restTimeSeconds.value * 1000;
-  timerTargetTime.value = Date.now() + durationMs;
-  
-  isTimerRunning.value = true;
-  remainingSeconds.value = restTimeSeconds.value;
-  
-  // Close selection sheet if open
-  if (currentActionSheet) {
-    await currentActionSheet.dismiss();
-    currentActionSheet = null;
-  }
-  
-  // Use a shorter interval for better responsiveness
-  timerInterval = setInterval(updateTimer, 200);
+    startTimer(restTimeSeconds.value);
+    
+    // Close selection sheet if open
+    if (currentActionSheet) {
+        await currentActionSheet.dismiss();
+        currentActionSheet = null;
+    }
 };
 
-// Add/remove visibility listener
-onMounted(() => {
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-});
-
 onUnmounted(() => {
-  document.removeEventListener('visibilitychange', handleVisibilityChange);
-  if (timerInterval) clearInterval(timerInterval);
+  unsubscribeFunctions.forEach(unsub => unsub());
+  unsubscribeFunctions.length = 0;
 });
 
 const showRestTimerSheet = async () => {
@@ -399,7 +335,7 @@ const loadWorkout = async () => {
         weekStart.setDate(diff);
         weekStart.setHours(0,0,0,0);
         
-          subscribeWeekPlans({
+        const unsubPlans = subscribeWeekPlans({
           where: [
             {
                 field: 'weekStart',
@@ -413,12 +349,13 @@ const loadWorkout = async () => {
             }
           ]
         });
+        if (unsubPlans) unsubscribeFunctions.push(unsubPlans);
 
         // Calculate week end for workout query
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 7); // end of Sunday (actually start of next Monday, allowing < comparison)
         
-        subscribeWeekWorkouts({
+        const unsubWorkouts = subscribeWeekWorkouts({
             where: [
                 { field: 'userId', operator: '==', value: currentUser.value.uid },
                 { field: 'date', operator: '>=', value: weekStart.toISOString() }, 
@@ -430,6 +367,7 @@ const loadWorkout = async () => {
                 { field: 'date', operator: '<', value: weekEnd.toISOString() }
             ]
         });
+        if (unsubWorkouts) unsubscribeFunctions.push(unsubWorkouts);
       }
     }
   } catch (e) {
@@ -778,12 +716,13 @@ const isExerciseInWorkout = (exerciseId: string | number): boolean => {
 
 onMounted(() => {
   loadWorkout();
-  subscribeExercises({
+  const unsubExercises = subscribeExercises({
     orderBy: {
       field: 'name',
       direction: 'asc'
     }
   });
+  if (unsubExercises) unsubscribeFunctions.push(unsubExercises);
 });
 </script>
 

@@ -1325,7 +1325,47 @@ const exercises: Omit<Exercise, "id">[] = [
       "Focus on full extension.",
       "Avoid arching the lower back."
     ]
-  }
+  },
+  {
+    extId: "67",
+    name: "Hack Squat",
+    category: ExerciseCategory.LEGS,
+    type: ExerciseType.MACHINES,
+    description: "A cable-based back exercise that targets the back legs muscles.",
+    howTo: [
+      "Attach a rope to a high pulley.",
+      "Face away from the machine and hold the rope overhead.",
+      "Extend elbows until arms are straight.",
+      "Return slowly to the bent-arm position."
+    ],
+    primaryMuscles: ["Quadriceps"],
+    secondaryMuscles: ["Hamstrings"],
+    tips: [
+      "Keep elbows stable.",
+      "Focus on full extension.",
+      "Avoid arching the lower back."
+    ]
+  },
+  {
+    extId: "68",
+    name: "Plate Loaded Leg Press",
+    category: ExerciseCategory.LEGS,
+    type: ExerciseType.MACHINES,
+    description: "A cable-based back exercise that targets the back legs muscles.",
+    howTo: [
+      "Attach a rope to a high pulley.",
+      "Face away from the machine and hold the rope overhead.",
+      "Extend elbows until arms are straight.",
+      "Return slowly to the bent-arm position."
+    ],
+    primaryMuscles: ["Quadriceps"],
+    secondaryMuscles: ["Hamstrings"],
+    tips: [
+      "Keep elbows stable.",
+      "Focus on full extension.",
+      "Avoid arching the lower back."
+    ]
+  },
 ];
 
 export { exercises };

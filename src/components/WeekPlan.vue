@@ -188,7 +188,6 @@ import { useFirebase } from '@/composables/useFirebase';
 import { useAuth } from '@/composables/useAuth';
 import { Collections, type WeekPlan, type Exercise, ExerciseCategory } from '@/types/firebase.types';
 import { templates } from '@/data/templates';
-import { exercises as staticExercises } from '@/data/exercises';
 
 const props = defineProps<{
   weekStart: Date;
@@ -212,10 +211,21 @@ const showExercisesPopover = ref(false);
 const popoverEvent = ref<Event | null>(null);
 const currentTemplateExercises = ref<string[]>([]);
 
-function openExercisesPopover(event: Event, templateExerciseIds: number[]) {
+// Refs for dynamic data
+const loadedStaticExercises = ref<any[]>([]);
+
+async function loadStaticExercises() {
+    if (loadedStaticExercises.value.length === 0) {
+        const module = await import('@/data/exercises');
+        loadedStaticExercises.value = module.exercises;
+    }
+}
+
+async function openExercisesPopover(event: Event, templateExerciseIds: number[]) {
+  await loadStaticExercises();
   popoverEvent.value = event;
   currentTemplateExercises.value = templateExerciseIds.map(id => {
-    const staticEx = staticExercises.find(e => Number(e.extId) === id);
+    const staticEx = loadedStaticExercises.value.find(e => Number(e.extId) === id);
     return staticEx ? staticEx.name : `Unknown Exercise (${id})`;
   });
   showExercisesPopover.value = true;
@@ -318,6 +328,7 @@ function formatTemplateName(name: string) {
 
 // Apply template
 async function applyTemplate(template: typeof templates[0]) {
+  await loadStaticExercises();
   const templateIds = template.exercises;
   
   // Map numeric template IDs to Firestore UUIDs by name
@@ -326,7 +337,7 @@ async function applyTemplate(template: typeof templates[0]) {
   
   templateIds.forEach(templateId => {
     // Find name from static data
-    const staticExercise = staticExercises.find(e => Number(e.extId) === templateId);
+    const staticExercise = loadedStaticExercises.value.find(e => Number(e.extId) === templateId);
     if (!staticExercise) return;
     
     // Find corresponding Firestore exercise ID

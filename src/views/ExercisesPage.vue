@@ -213,7 +213,6 @@ import {
 } from 'ionicons/icons';
 import { useFirebase } from '@/composables/useFirebase';
 import { Collections, type Exercise, ExerciseCategory, ExerciseType } from '@/types/firebase.types';
-import { exercises as exerciseSeeds } from '@/data/exercises';
 
 // Initialize Firebase composable for exercises
 const {
@@ -316,7 +315,7 @@ const handleImageError = (id: string) => {
 const seedExercises = async () => {
   const alert = await alertController.create({
     header: 'Seed Exercises',
-    message: `This will add/update ${exerciseSeeds.length} exercises in the database and link similar ones. Continue?`,
+    message: `This will add/update exercises in the database and link similar ones. Continue?`, /* Removed count as we don't have it yet */
     buttons: [
       {
         text: 'Cancel',
@@ -332,6 +331,9 @@ const seedExercises = async () => {
           const extIdToDocId: Record<string, string> = {};
 
           try {
+            // Dynamically import exercises data
+            const { exercises: exerciseSeeds } = await import('@/data/exercises');
+            
             // Pass 1: Create/Update exercises
             for (const exerciseSeed of exerciseSeeds) {
               const { id, ...exerciseData } = exerciseSeed as any;
