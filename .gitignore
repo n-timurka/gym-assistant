@@ -50,3 +50,6 @@ cypress/screenshots
 
 # ESLint
 .eslintcache
+
+# Local seed data
+/data

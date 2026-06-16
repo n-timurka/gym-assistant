@@ -1,5 +1,6 @@
 export const templates = [
     {
+        extId: "fullbody-3",
         title: "Fullbody 3",
         description: "Men fullbody week set, 3 workouts, 7 exercises each",
         workoutsAmount: 3,
@@ -18,6 +19,7 @@ export const templates = [
         ],
     },
     {
+        extId: "fullbody-2",
         title: "Fullbody 2",
         description: "Men fullbody week set, 2 workouts, 7 exercises each",
         workoutsAmount: 2,
@@ -35,6 +37,7 @@ export const templates = [
         ],
     },
     {
+        extId: "women-3",
         title: "Women 3",
         description: "",
         workoutsAmount: 3,
@@ -53,6 +56,7 @@ export const templates = [
         ],
     },
     {
+        extId: "women-2",
         title: "Women 2",
         description: "",
         workoutsAmount: 2,

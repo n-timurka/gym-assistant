@@ -19,39 +19,17 @@
           </ion-button>
         </div>
 
-        <ion-segment v-model="selectedSegment">
-          <ion-segment-button value="workouts">
-            <ion-label>Workouts</ion-label>
-          </ion-segment-button>
-          <ion-segment-button value="plan">
-            <ion-label>Week Plan</ion-label>
-          </ion-segment-button>
-        </ion-segment>
-
-        <!-- Segments Content -->
-        <div v-if="selectedSegment === 'workouts'">
-          <WorkoutsList 
-            :workouts="workouts" 
-            :exercises="exercises"
-            :loading="loading"
-            v-model:selectedDate="selectedDate"
-            :currentWeekDays="currentWeekDays"
-            @addWorkout="addWorkout"
-            @deleteWorkout="deleteWorkout"
-            @startWorkout="startWorkout"
-            @fillFromWeekPlan="fillWorkoutFromWeekPlan"
-          />
-        </div>
-
-        <div v-if="selectedSegment === 'plan'">
-          <WeekPlanComponent :weekStart="currentWeekStart" />
-        </div>
-
-        <!-- Real-time Status -->
-        <div class="status-footer" v-if="isRealtime">
-          <ion-icon :icon="cloudDoneOutline" color="success"></ion-icon>
-          <span class="status-text">Synced</span>
-        </div>
+        <WorkoutsList
+          :workouts="workouts" 
+          :exercises="exercises"
+          :loading="loading"
+          v-model:selectedDate="selectedDate"
+          :currentWeekDays="currentWeekDays"
+          @addWorkout="addWorkout"
+          @deleteWorkout="deleteWorkout"
+          @startWorkout="startWorkout"
+          @fillFromWeekPlan="fillWorkoutFromWeekPlan"
+        />
       </div>
     </ion-content>
   </ion-page>
@@ -67,19 +45,14 @@ import {
   IonContent,
   IonButton,
   IonIcon,
-  IonSegment,
-  IonSegmentButton,
-  IonLabel
 } from '@ionic/vue';
 import { 
-  cloudDoneOutline,
   chevronBackOutline,
   chevronForwardOutline
 } from 'ionicons/icons';
 import { useFirebase } from '@/composables/useFirebase';
 import { Collections, type Workout, type Exercise, type WeekPlan, type WorkoutExercise, type Progress, WorkoutStatus, ExerciseCategory } from '@/types/firebase.types';
 import WorkoutsList from '@/components/WorkoutsList.vue';
-import WeekPlanComponent from '@/components/WeekPlan.vue';
 import { useAuth } from '@/composables/useAuth';
 
 const { currentUser } = useAuth();
@@ -109,8 +82,6 @@ const {
 const {
   getAll: getProgressRecords
 } = useFirebase<Progress>(Collections.PROGRESS);
-
-const selectedSegment = ref('workouts');
 
 // Week navigation state
 const currentWeekStart = ref(getStartOfWeek(new Date()));
@@ -413,18 +384,43 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+ion-header {
+  background-color: var(--ion-color-card);
+
+  ion-title {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 800;
+  }
+}
+
 .week-navigation-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1rem;
+
+  ion-button {
+    --background: var(--ion-color-secondary);
+    --color: var(--ion-color-muted-foreground);
+    border-radius: 0.75rem; 
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms; 
+
+    ion-icon {
+      width: 1.25rem; 
+      height: 1.25rem; 
+      padding: 0.5rem; 
+    }
+  }
 }
 
 .week-navigation-header h2 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--ion-color-dark);
+  font-size: 0.875rem;
+  line-height: 1.25rem; 
+  font-weight: 700; 
+  color: var(--ion-color-foreground);
 }
 
 .status-footer {

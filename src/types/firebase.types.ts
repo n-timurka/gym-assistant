@@ -114,13 +114,30 @@ export interface Progress extends FirestoreDocument {
     weight: number;
 }
 
+export interface ProgramWorkout {
+    exerciseId: string;
+    sets: number;
+    reps: number;
+}
+
+export interface Program extends FirestoreDocument {
+    userId: string;
+    name: string;
+    description?: string;
+    workoutsPerWeek: number;
+    difficultyLevel: string;
+    isActive: boolean;
+    workouts: ProgramWorkout[];
+}
+
 // Collection names
 export enum Collections {
     WORKOUTS = 'workouts',
     USERS = 'users',
     EXERCISES = 'exercises',
     WEEK_PLANS = 'week_plans',
-    PROGRESS = 'progress'
+    PROGRESS = 'progress',
+    PROGRAMS = 'programs'
 }
 
 export interface WeekPlan extends FirestoreDocument {

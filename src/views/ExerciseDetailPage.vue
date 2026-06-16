@@ -225,7 +225,8 @@ import {
   IonSpinner,
   IonList,
   IonItem,
-  IonNote
+  IonNote,
+  IonThumbnail,
 } from '@ionic/vue';
 import { 
   playCircleOutline, 

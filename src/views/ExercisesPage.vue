@@ -3,11 +3,6 @@
     <ion-header>
       <ion-toolbar>
         <ion-title>Exercises</ion-title>
-        <ion-buttons slot="end">
-          <ion-button @click="seedExercises" :disabled="loading || seeding">
-            <ion-icon :icon="downloadOutline" slot="icon-only"></ion-icon>
-          </ion-button>
-        </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true">
@@ -202,7 +197,6 @@ import {
   IonItem,
   IonModal,
   IonThumbnail,
-  alertController
 } from '@ionic/vue';
 import {
   barbellOutline,
@@ -219,9 +213,7 @@ const {
   documents: exercises,
   loading,
   error,
-  create,
-  update,
-  subscribe
+  subscribe,
 } = useFirebase<Exercise>(Collections.EXERCISES);
 
 // Seeding state
@@ -308,93 +300,6 @@ const getExerciseImage = (exercise: Exercise) => {
 const handleImageError = (id: string) => {
     imageErrorMap.value[id] = true;
 }
-
-/**
- * Seed exercises from data file
- */
-const seedExercises = async () => {
-  const alert = await alertController.create({
-    header: 'Seed Exercises',
-    message: `This will add/update exercises in the database and link similar ones. Continue?`, /* Removed count as we don't have it yet */
-    buttons: [
-      {
-        text: 'Cancel',
-        role: 'cancel'
-      },
-      {
-        text: 'Seed',
-        handler: async () => {
-          seeding.value = true;
-          seedSuccess.value = false;
-          seedCount.value = 0;
-          let updatedCount = 0;
-          const extIdToDocId: Record<string, string> = {};
-
-          try {
-            // Dynamically import exercises data
-            const { exercises: exerciseSeeds } = await import('@/data/exercises');
-            
-            // Pass 1: Create/Update exercises
-            for (const exerciseSeed of exerciseSeeds) {
-              const { id, ...exerciseData } = exerciseSeed as any;
-              
-              const existingExercise = exercises.value.find(e => e.extId === exerciseData.extId);
-
-              if (existingExercise) {
-                // Update existing exercise
-                // Don't update 'similar' yet as we need IDs from everyone first
-                const { similar, ...dataWithoutSimilar } = exerciseData;
-                await update(existingExercise.id, dataWithoutSimilar);
-                extIdToDocId[exerciseData.extId] = existingExercise.id;
-                updatedCount++;
-                console.log(`Updated exercise: ${exerciseData.name}`);
-              } else {
-                // Create new exercise
-                const { similar, ...dataWithoutSimilar } = exerciseData;
-                const newId = await create(dataWithoutSimilar as Omit<Exercise, 'id'>);
-                if (newId) {
-                   extIdToDocId[exerciseData.extId] = newId;
-                   seedCount.value++;
-                   console.log(`Created exercise: ${exerciseData.name}`);
-                }
-              }
-            }
-
-            // Pass 2: Link Similar Exercises
-            console.log('Starting Pass 2: Linking similar exercises...');
-            for (const exerciseSeed of exerciseSeeds) {
-               if (exerciseSeed.extId && exerciseSeed.similar && exerciseSeed.similar.length > 0) {
-                  const docId = extIdToDocId[exerciseSeed.extId];
-                  if (!docId) continue;
-
-                  const similarDocIds = exerciseSeed.similar
-                    .map(extId => extIdToDocId[extId])
-                    .filter(id => !!id);
-                  
-                  if (similarDocIds.length > 0) {
-                      await update(docId, { similar: similarDocIds });
-                  }
-               }
-            }
-
-            seedSuccess.value = true;
-            setTimeout(() => {
-              seedSuccess.value = false;
-            }, 3000);
-            
-            console.log(`Seeding complete. Created: ${seedCount.value}, Updated: ${updatedCount}`);
-          } catch (err) {
-            console.error('Error seeding exercises:', err);
-          } finally {
-            seeding.value = false;
-          }
-        }
-      }
-    ]
-  });
-
-  await alert.present();
-};
 
 // Real-time subscription
 let unsubscribe: (() => void) | null = null;

@@ -1,2 +1,38 @@
 /* For information on how to create your own theme, please refer to:
 http://ionicframework.com/docs/theming/ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* Set variables for all modes */
+:root {
+    /* Set the background of the entire app */
+    --ion-background-color: hsl(210 20% 98%);
+
+    /* Set the font family of the entire app */
+    --ion-font-family: "Inter", "sans-serif";
+
+    --ion-color-primary: hsl(220 25% 10%);
+    --ion-color-secondary: hsl(210 15% 95%);
+    --ion-color-foreground: hsl(220 25% 10%);
+    --ion-color-border: hsl(210 15% 90%);
+    --ion-color-card: hsl(0 0% 100%);
+    --ion-color-muted: hsl(210 15% 93%);
+    --ion-color-muted-foreground: hsl(220 10% 50%);
+    --ion-color-accent: hsl(82 85% 50%);
+    --ion-color-accent-foreground: hsl(220 25% 10%);
+    --ion-color-lime: hsl(82 85% 50%);
+}
+
+ion-header {
+  background-color: var(--ion-color-card);
+
+  ion-title {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 800;
+  }
+}
+
+.gym-lime-gradient {
+    background: linear-gradient(135deg, hsl(var(--ion-color-lime)), hsl(82 75% 45%));
+}

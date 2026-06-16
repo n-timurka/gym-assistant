@@ -23,20 +23,20 @@
     <!-- Workout Details (displayed inline below week days) -->
     <div v-else class="workout-details">
       <!-- No workout state -->
-      <ion-card v-if="!selectedDateWorkout">
-        <ion-card-content class="empty-state">
-          <p>No workout for this day.</p>
-          <ion-button fill="clear" @click="$emit('addWorkout')">
-            Create a workout
-          </ion-button>
-        </ion-card-content>
-      </ion-card>
+      <div class="empty-state" v-if="!selectedDateWorkout">
+        <ion-icon :icon="addOutline"></ion-icon>
+        <h3>No Workout</h3>
+        <p>Nothing planned for {{ formatDate(selectedDate) }}</p>
+        <ion-button @click="$emit('addWorkout')">
+          Create a workout
+        </ion-button>
+      </div>
 
       <!-- Workout exists -->
       <div v-else>
         <ion-card class="workout-card">
           <ion-card-header>
-            <ion-card-title>
+            <ion-card-title class="text-center">
               {{ selectedDateWorkout.date }}
             </ion-card-title>
             <div class="workout-header">
@@ -64,7 +64,7 @@
               
               <ion-button 
                 expand="block"
-                fill="outline" 
+                fill="outline"
                 :router-link="'/workouts/' + selectedDateWorkout.id"
               >
                 View Details
@@ -72,30 +72,24 @@
             </div>
 
             <!-- Exercises List -->
-            <div v-if="selectedDateWorkout.exercises && selectedDateWorkout.exercises.length > 0" class="exercises-list">
-              <h3>Exercises</h3>
-              <ion-list>
-                <ion-item v-for="exercise in selectedDateWorkout.exercises" :key="exercise.id">
-                  {{ exercise.name }}
-                  <ion-badge slot="end" color="medium">
-                    {{ exercise.category }}
-                  </ion-badge>
-                </ion-item>
-              </ion-list>
-            </div>
+            <ion-list v-if="selectedDateWorkout.exercises && selectedDateWorkout.exercises.length > 0">
+              <ion-item v-for="exercise in selectedDateWorkout.exercises" :key="exercise.id">
+                {{ exercise.name }}
+                <ion-badge slot="end" color="medium">
+                  {{ exercise.category }}
+                </ion-badge>
+              </ion-item>
+            </ion-list>
             
-            <!-- Delete Button -->
-            <div class="delete-button-container">
-              <ion-button 
-                expand="block"
-                color="danger" 
-                fill="clear" 
-                @click="$emit('deleteWorkout', selectedDateWorkout.id)"
-              >
-                <ion-icon slot="start" :icon="trashOutline"></ion-icon>
-                Delete Workout
-              </ion-button>
-            </div>
+            <ion-button 
+              expand="block"
+              color="danger" 
+              fill="clear" 
+              @click="$emit('deleteWorkout', selectedDateWorkout.id)"
+            >
+              <ion-icon slot="start" :icon="trashOutline"></ion-icon>
+              Delete Workout
+            </ion-button>
           </ion-card-content>
         </ion-card>
       </div>
@@ -122,7 +116,8 @@ import {
 } from '@ionic/vue';
 import { 
   trashOutline,
-  fitnessOutline
+  fitnessOutline,
+  addOutline,
 } from 'ionicons/icons';
 import type { Workout, Exercise } from '@/types/firebase.types';
 import { WorkoutStatus } from '@/types/firebase.types';
@@ -135,7 +130,7 @@ const props = defineProps<{
   currentWeekDays: { date: Date; dayName: string; dayNumber: number }[];
 }>();
 
-const emit = defineEmits(['update:selectedDate', 'addWorkout', 'deleteWorkout', 'fillFromWeekPlan']);
+defineEmits(['update:selectedDate', 'addWorkout', 'deleteWorkout', 'fillFromWeekPlan']);
 
 // Helper to check if two dates are the same day
 function isSameDay(d1: Date, d2: Date) {
@@ -281,9 +276,34 @@ const getStatusColor = (workout: Workout) => {
 }
 
 .empty-state {
+  display: flex; 
+  padding-top: 4rem;
+  padding-bottom: 4rem; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: center; 
   text-align: center;
-  padding: 2rem 1rem;
-  color: var(--ion-color-medium);
+
+  ion-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    background-color: var(--ion-color-secondary);
+    color: var(--ion-color-muted-secondary);
+    border-radius: 50%;
+    padding: 1rem;
+  }
+
+  ion-button {
+    --border-radius: 0.75rem;
+    --padding-start: 1.5rem;
+    --padding-end: 1.5rem;
+    --padding-top: 0.625rem;
+    --padding-bottom: 0.625rem;
+    --transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.875rem;
+    line-height: 1.25rem; 
+    font-weight: 700; 
+  }
 }
 
 .workout-header {
