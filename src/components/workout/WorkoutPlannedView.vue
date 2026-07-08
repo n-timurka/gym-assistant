@@ -1,43 +1,3 @@
-<template>
-  <div class="workout-planned-view">
-    <!-- Empty State -->
-    <div v-if="!exercises.length" class="empty-state ion-padding">
-      <p>No exercises added yet.</p>
-      <ion-button fill="outline" @click="$emit('open-add-modal')">
-        Add Exercise
-      </ion-button>
-    </div>
-
-    <!-- Exercises List -->
-    <ion-reorder-group :disabled="false" @ionItemReorder="handleReorder">
-      <workout-exercise-card
-        v-for="(exercise, index) in exercises"
-        :key="exercise.exerciseId"
-        :exercise="exercise"
-        :exercise-name="getExerciseName(exercise.exerciseId)"
-        :exercise-category="getExerciseCategory(exercise.exerciseId)"
-        :exercise-image="getExerciseImage(exercise.exerciseId)"
-        :exercise-description="getExerciseDescription(exercise.exerciseId)"
-        :is-workout-started="false"
-        :is-collapsible="true"
-        @delete-exercise="$emit('delete-exercise', index)"
-        @add-set="$emit('add-set', index)"
-        @remove-set="(setIndex) => $emit('remove-set', index, setIndex)"
-        @update-set="$emit('update-set')"
-      ></workout-exercise-card>
-    </ion-reorder-group>
-
-    <ion-footer class="ion-no-border">
-      <!-- Clear Workout Button -->
-      <div v-if="exercises.length" class="ion-padding">
-        <ion-button expand="block" fill="outline" color="danger" @click="$emit('clear-workout')">
-          Clear Workout
-        </ion-button>
-      </div>
-    </ion-footer>
-  </div>
-</template>
-
 <script setup lang="ts">
 import {
   IonReorderGroup,
@@ -46,12 +6,13 @@ import {
 } from '@ionic/vue';
 import WorkoutExerciseCard from '@/components/workout/WorkoutExerciseCard.vue';
 import { WorkoutExercise, Exercise } from '@/types/firebase.types';
+import AddWorkoutModal from './AddWorkoutModal.vue';
+import { ref } from 'vue';
 
 const props = defineProps<{
   exercises: WorkoutExercise[];
   allExercises: Exercise[];
 }>();
-
 const emit = defineEmits<{
   (e: 'delete-exercise', index: number): void;
   (e: 'add-set', index: number): void;
@@ -60,7 +21,10 @@ const emit = defineEmits<{
   (e: 'reorder', event: CustomEvent): void;
   (e: 'clear-workout'): void;
   (e: 'open-add-modal'): void;
+  (e: 'add-exercises', ids: string[]): void,
 }>();
+
+const isAddWorkoutOpen = ref(false);
 
 const getExerciseName = (id: string) => {
   const ex = props.allExercises.find(e => String(e.id) === String(id));
@@ -85,7 +49,58 @@ const getExerciseDescription = (id: string) => {
 const handleReorder = (event: CustomEvent) => {
   emit('reorder', event);
 };
+
+const loadFromProgram = (ids: string[]) => {
+  emit('add-exercises', ids);
+  isAddWorkoutOpen.value = false;
+} 
 </script>
+
+<template>
+  <div>
+    <!-- Empty State -->
+    <div v-if="!exercises.length" class="empty-state ion-padding">
+      <p>No exercises added yet.</p>
+      <IonButton fill="outline" @click="$emit('open-add-modal')">
+        Add Exercise
+      </IonButton>
+      <p>Or add template from program.</p>
+      <IonButton @click="isAddWorkoutOpen = true">
+        Add Workout
+      </IonButton>
+    </div>
+
+    <!-- Exercises List -->
+    <ion-reorder-group :disabled="false" @ionItemReorder="handleReorder">
+      <workout-exercise-card
+        v-for="(exercise, index) in exercises"
+        :key="exercise.exerciseId"
+        :exercise="exercise"
+        :exercise-name="getExerciseName(exercise.exerciseId)"
+        :exercise-category="getExerciseCategory(exercise.exerciseId)"
+        :exercise-image="getExerciseImage(exercise.exerciseId)"
+        :exercise-description="getExerciseDescription(exercise.exerciseId)"
+        :is-workout-started="false"
+        :is-collapsible="true"
+        @delete-exercise="$emit('delete-exercise', index)"
+        @add-set="$emit('add-set', index)"
+        @remove-set="(setIndex) => $emit('remove-set', index, setIndex)"
+        @update-set="$emit('update-set')"
+      ></workout-exercise-card>
+    </ion-reorder-group>
+
+    <add-workout-modal v-model="isAddWorkoutOpen" @select-workout="loadFromProgram" />
+
+    <ion-footer class="ion-no-border">
+      <!-- Clear Workout Button -->
+      <div v-if="exercises.length" class="ion-padding">
+        <ion-button expand="block" fill="outline" color="danger" @click="$emit('clear-workout')">
+          Clear Workout
+        </ion-button>
+      </div>
+    </ion-footer>
+  </div>
+</template>
 
 <style scoped>
 .empty-state {

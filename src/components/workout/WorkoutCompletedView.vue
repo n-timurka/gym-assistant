@@ -1,29 +1,46 @@
 <template>
   <div class="workout-completed-view">
-    <div class="ion-padding text-center">
-      <h2 class="ion-text-center">Workout Summary</h2>
-      <p class="ion-text-center ion-text-wrap text-medium">
-        Great job! Here is what you accomplished.
-      </p>
-    </div>
+    <IonCard>
+      <IonCardHeader>
+        <IonCardTitle class="ion-text-center">Workout Summary</IonCardTitle>
+      </IonCardHeader>
+      <IonCardContent>
+        <IonList>
+          <IonItem>
+            <IonLabel>Time</IonLabel>
+            <IonBadge slot="end">{{ workoutDuration }} min.</IonBadge>
+          </IonItem>
+          <IonItem>
+            <IonLabel>Exercises</IonLabel>
+            <IonBadge slot="end">{{ exercises.length }}</IonBadge>
+          </IonItem>
+          <IonItem>
+            <IonLabel>Sets</IonLabel>
+            <IonBadge slot="end">{{ workoutSets }}</IonBadge>
+          </IonItem>
+        </IonList>
+      </IonCardContent>
+    </IonCard>
 
-    <ion-list>
+    <IonList>
+      <IonListHeader class="ion-text-center">Exercises:</IonListHeader>
+
       <ion-item v-for="exercise in exercises" :key="exercise.exerciseId" lines="full">
         <ion-thumbnail slot="start">
-          <img :src="getExercisePicture(exercise.exerciseId)" alt="Exercise" @error="handleImageError" />
+          <ExerciseImage :exercise-id="exercise.exercise?.extId" size="xs" />
         </ion-thumbnail>
         <ion-label>
-          <h2>{{ getExerciseName(exercise.exerciseId) }}</h2>
-          <p>{{ getExerciseCategory(exercise.exerciseId) }}</p>
+          <h2>{{ exercise.exercise?.name }}</h2>
+          <p>{{ exercise.exercise?.category }}</p>
           <p class="sets-summary">
             {{ getCompletedSetsCount(exercise) }} / {{ exercise.sets.length }} sets completed
           </p>
         </ion-label>
         <ion-note slot="end" color="primary">
-            {{ getMaxWeight(exercise) }} kg Best
+          {{ getMaxWeight(exercise) }} kg Best
         </ion-note>
       </ion-item>
-    </ion-list>
+    </IonList>
   </div>
 </template>
 
@@ -33,33 +50,33 @@ import {
   IonItem,
   IonThumbnail,
   IonLabel,
-  IonNote
+  IonNote,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonBadge,
+  IonListHeader
 } from '@ionic/vue';
-import { WorkoutExercise, Exercise } from '@/types/firebase.types';
+import { Workout, type WorkoutExercise } from '@/types/firebase.types';
+import ExerciseImage from '@/components/ExerciseImage.vue';
+import { computed } from 'vue';
+import { calculateDuration } from '@/helpers/date.helper';
 
-const props = defineProps<{
-  exercises: WorkoutExercise[];
-  allExercises: Exercise[];
+const { exercises, workout } = defineProps<{
+  exercises: WorkoutExercise[],
+  workout: Workout,
 }>();
 
-const getExerciseName = (id: string) => {
-  const ex = props.allExercises.find(e => String(e.id) === String(id));
-  return ex ? ex.name : 'Unknown Exercise';
-};
+const workoutDuration = computed(() => {
+  if (!workout.startTime || !workout.endTime) return
 
-const getExerciseCategory = (id: string) => {
-  const ex = props.allExercises.find(e => String(e.id) === String(id));
-  return ex ? ex.category : undefined;
-};
-
-const getExercisePicture = (id: string) => {
-  const ex = props.allExercises.find(e => String(e.id) === String(id));
-  return ex?.picture || `/assets/exercises/${ex?.extId}.png`;
-};
-
-const handleImageError = (e: Event) => {
-  (e.target as HTMLImageElement).src = '/assets/icon/icon.png';
-};
+  return calculateDuration(workout.startTime, workout.endTime);
+});
+const workoutSets = computed(() => exercises.reduce(
+  (value, exercise) => value + exercise.sets.filter(s => s.isCompleted).length,
+  0,
+));
 
 const getCompletedSetsCount = (exercise: WorkoutExercise) => {
   return exercise.sets.filter(s => s.isCompleted).length;

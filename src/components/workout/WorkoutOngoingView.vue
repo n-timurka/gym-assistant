@@ -18,10 +18,12 @@
         </ion-button>
         
         <div class="exercise-title-container">
-           <h2 class="ion-text-center ion-no-margin">{{ getExerciseName(currentExercise.exerciseId) }}</h2>
-           <ion-text color="medium" class="ion-text-center text-xs">
-            {{ currentExerciseIndex + 1 }} of {{ exercises.length }}
-           </ion-text>
+          <h2 class="ion-text-center ion-no-margin">
+            {{ currentExercise.exercise?.name }}
+          </h2>
+          <ion-text color="medium" class="ion-text-center text-xs">
+          {{ currentExerciseIndex + 1 }} of {{ exercises.length }}
+          </ion-text>
         </div>
 
         <ion-button fill="clear" :disabled="currentExerciseIndex === exercises.length - 1" @click="nextExercise">
@@ -33,35 +35,12 @@
       <div class="exercise-content ion-padding flex-grow overflow-y-auto">
         <!-- Image & Description -->
         <div class="media-container ion-margin-bottom">
-           <div v-if="hasImage(currentExercise.exerciseId)" class="exercise-image-container relative">
+           <div  v-if="currentExercise.exercise" class="exercise-image-container relative">
              <div class="exercise-badges-overlay">
-               <ion-badge color="primary" class="category-badge">
-                 {{ getExerciseCategory(currentExercise.exerciseId) }}
-               </ion-badge>
-               <ion-badge color="secondary" class="type-badge">
-                 {{ getExerciseType(currentExercise.exerciseId) }}
-               </ion-badge>
+              <exercise-category-label :category="currentExercise.exercise?.category" size="sm" />
+              <exercise-type-label :type="currentExercise.exercise.type" />
              </div>
-             <img 
-              :src="getExercisePicture(currentExercise.exerciseId)" 
-              alt="Exercise Image" 
-              class="exercise-image" 
-              @error="handleImageError"
-             />
-           </div>
-           <div v-else class="exercise-image-container relative">
-             <div class="exercise-badges-overlay">
-               <ion-badge color="primary" class="category-badge">
-                 {{ getExerciseCategory(currentExercise.exerciseId) }}
-               </ion-badge>
-               <ion-badge color="secondary" class="type-badge">
-                 {{ getExerciseType(currentExercise.exerciseId) }}
-               </ion-badge>
-             </div>
-             <div class="media-placeholder">
-              <ion-icon :icon="imageOutline" size="large"></ion-icon>
-              <p>No Image Available</p>
-             </div>
+             <ExerciseImage :exercise-id="currentExercise.exercise?.extId" size="lg" />
            </div>
         </div>
 
@@ -168,16 +147,25 @@ import {
   IonButton,
   IonIcon,
   IonProgressBar,
-  IonBadge,
   actionSheetController,
   IonSegment,
   IonSegmentButton,
   IonLabel,
   IonText,
 } from '@ionic/vue';
-import { chevronBackOutline, chevronForwardOutline, swapHorizontalOutline, addCircleOutline, imageOutline, trashOutline, ellipsisHorizontalOutline } from 'ionicons/icons';
+import {
+  chevronBackOutline,
+  chevronForwardOutline,
+  swapHorizontalOutline,
+  addCircleOutline, 
+  trashOutline,
+  ellipsisHorizontalOutline,
+} from 'ionicons/icons';
 import WorkoutExerciseCard from '@/components/workout/WorkoutExerciseCard.vue';
 import { WorkoutExercise, Exercise } from '@/types/firebase.types';
+import ExerciseImage from '../ExerciseImage.vue';
+import ExerciseCategoryLabel from '../ExerciseCategoryLabel.vue';
+import ExerciseTypeLabel from '../ExerciseTypeLabel.vue';
 
 const props = defineProps<{
   exercises: WorkoutExercise[];
@@ -198,7 +186,6 @@ const emit = defineEmits<{
 }>();
 
 const currentExerciseIndex = ref(0);
-const imageErrorMap = ref<Record<string, boolean>>({});
 const selectedTab = ref('sets');
 
 // Watch for changes in exercises list to keep index valid
@@ -211,10 +198,14 @@ watch(() => props.exercises.length, (newLength) => {
 const currentExercise = computed(() => {
   if (!props.exercises || props.exercises.length === 0) return null;
   // Safety check in case index is briefly out of bounds
-  if (currentExerciseIndex.value >= props.exercises.length) {
-      return props.exercises[props.exercises.length - 1];
-  }
-  return props.exercises[currentExerciseIndex.value];
+  const exercise = currentExerciseIndex.value >= props.exercises.length
+    ? props.exercises[props.exercises.length - 1]
+    : props.exercises[currentExerciseIndex.value];
+
+  return {
+    ...exercise,
+    exercise: props.allExercises.find(e => String(e.id) === String(exercise.exerciseId)),
+  };
 });
 
 const getExerciseName = (id: string) => {
@@ -227,31 +218,10 @@ const getExerciseCategory = (id: string) => {
   return ex ? ex.category : undefined;
 };
 
-const getExercisePicture = (id: string) => {
-  const ex = props.allExercises.find(e => String(e.id) === String(id));
-  return ex?.picture ? ex.picture : `/assets/exercises/${ex?.extId}.png`;
-};
-
-const hasImage = (id: string) => {
-    if (imageErrorMap.value[id]) return false;
-    return true; // Simplified, assume exists unless error
-};
-
-const handleImageError = (e: Event) => {
-    if (currentExercise.value) {
-        imageErrorMap.value[currentExercise.value.exerciseId] = true;
-    }
-};
-
 const getExerciseDescription = (id: string) => {
     const ex = props.allExercises.find(e => String(e.id) === String(id));
     return ex?.description || '';
 }
-
-const getExerciseType = (id: string) => {
-    const ex = props.allExercises.find(e => String(e.id) === String(id));
-    return ex ? ex.type : undefined;
-};
 
 const getExerciseHowTo = (id: string) => {
     const ex = props.allExercises.find(e => String(e.id) === String(id));
@@ -364,7 +334,7 @@ const checkAllSetsCompleted = () => {
 
 .exercise-image-container {
   width: 100%;
-  height: 200px;
+  height: 250px;
   border-radius: 12px;
   overflow: hidden;
   background: var(--ion-color-light);
@@ -422,13 +392,13 @@ const checkAllSetsCompleted = () => {
 
 .exercise-badges-overlay {
     position: absolute;
-    top: 12px; /* Adjust to match padding/margin of container */
+    bottom: 12px;
     left: 0;
     right: 0;
     display: flex;
     justify-content: space-between;
     padding: 0 12px;
-    pointer-events: none; /* Let clicks pass through to image if needed */
+    pointer-events: none;
     z-index: 10;
 }
 

@@ -10,6 +10,7 @@ import {
     onSnapshot,
     query,
     where,
+    documentId,
     orderBy,
     limit,
     QueryConstraint,
@@ -42,6 +43,12 @@ export function useFirebase<T extends FirestoreDocument>(collectionName: string)
         return converted;
     };
 
+    const getWhereField = (field: string) => {
+        return field === 'documentId' || field === 'id' || field === '__name__'
+            ? documentId()
+            : field;
+    };
+
     /**
      * Get all documents from a collection
      */
@@ -56,7 +63,7 @@ export function useFirebase<T extends FirestoreDocument>(collectionName: string)
             // Apply query options
             if (options?.where) {
                 options.where.forEach(w => {
-                    constraints.push(where(w.field, w.operator, w.value));
+                    constraints.push(where(getWhereField(w.field), w.operator, w.value));
                 });
             }
 
@@ -202,7 +209,7 @@ export function useFirebase<T extends FirestoreDocument>(collectionName: string)
         // Apply query options
         if (options?.where) {
             options.where.forEach(w => {
-                constraints.push(where(w.field, w.operator, w.value));
+                constraints.push(where(getWhereField(w.field), w.operator, w.value));
             });
         }
 

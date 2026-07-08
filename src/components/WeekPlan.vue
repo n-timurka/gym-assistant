@@ -216,8 +216,8 @@ const loadedStaticExercises = ref<any[]>([]);
 
 async function loadStaticExercises() {
     if (loadedStaticExercises.value.length === 0) {
-        const module = await import('@/data/exercises');
-        loadedStaticExercises.value = module.exercises;
+        // const module = await import('@/data/exercises');
+        // loadedStaticExercises.value = module.exercises;
     }
 }
 
@@ -319,11 +319,6 @@ async function addExerciseToPlan(exerciseId: string | number) {
     });
   }
   showAddExerciseModal.value = false;
-}
-
-// Format template name for display (Not used in new design but keeping if needed or can remove)
-function formatTemplateName(name: string) {
-  return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
 // Apply template

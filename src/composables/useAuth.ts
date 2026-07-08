@@ -1,15 +1,14 @@
-import { ref, Ref, computed } from 'vue';
+import { ref, Ref, computed } from "vue";
 import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    sendPasswordResetEmail,
-    onAuthStateChanged,
-    User,
-    updateProfile
-} from 'firebase/auth';
-import { auth } from '../firebase.config';
-import type { AuthUser, AuthError } from '../types/firebase.types';
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  updateProfile,
+} from "firebase/auth";
+import { auth } from "../firebase.config";
+import type { AuthUser, AuthError } from "../types/firebase.types";
 
 /**
  * Vue Composable for Firebase Authentication
@@ -26,191 +25,195 @@ const authInitialized = ref(false);
 let authListenerInitialized = false;
 
 const initializeAuthListener = () => {
-    if (authListenerInitialized) return;
+  if (authListenerInitialized) return;
 
-    authListenerInitialized = true;
+  authListenerInitialized = true;
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            currentUser.value = {
-                uid: user.uid,
-                email: user.email || '',
-                displayName: user.displayName || undefined,
-                photoURL: user.photoURL || undefined,
-                emailVerified: user.emailVerified
-            };
-        } else {
-            currentUser.value = null;
-        }
-        loading.value = false;
-        authInitialized.value = true;
-    });
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser.value = {
+        uid: user.uid,
+        email: user.email || "",
+        displayName: user.displayName || undefined,
+        photoURL: user.photoURL || undefined,
+        emailVerified: user.emailVerified,
+      };
+    } else {
+      currentUser.value = null;
+    }
+    loading.value = false;
+    authInitialized.value = true;
+  });
 };
 
 export function useAuth() {
-    // Initialize listener on first use
-    if (!authListenerInitialized) {
-        initializeAuthListener();
+  // Initialize listener on first use
+  if (!authListenerInitialized) {
+    initializeAuthListener();
+  }
+
+  const isAuthenticated = computed(() => currentUser.value !== null);
+
+  /**
+   * Sign up a new user with email and password
+   */
+  const signup = async (
+    email: string,
+    password: string,
+    displayName?: string,
+  ): Promise<{ success: boolean; error?: AuthError }> => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+
+      // Update display name if provided
+      if (displayName && userCredential.user) {
+        await updateProfile(userCredential.user, { displayName });
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      const authError = handleAuthError(err);
+      error.value = authError.message;
+      return { success: false, error: authError };
+    } finally {
+      loading.value = false;
     }
+  };
 
-    const isAuthenticated = computed(() => currentUser.value !== null);
+  /**
+   * Sign in an existing user with email and password
+   */
+  const login = async (
+    email: string,
+    password: string,
+  ): Promise<{ success: boolean; error?: AuthError }> => {
+    loading.value = true;
+    error.value = null;
 
-    /**
-     * Sign up a new user with email and password
-     */
-    const signup = async (
-        email: string,
-        password: string,
-        displayName?: string
-    ): Promise<{ success: boolean; error?: AuthError }> => {
-        loading.value = true;
-        error.value = null;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      return { success: true };
+    } catch (err: any) {
+      const authError = handleAuthError(err);
+      error.value = authError.message;
+      return { success: false, error: authError };
+    } finally {
+      loading.value = false;
+    }
+  };
 
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  /**
+   * Sign out the current user
+   */
+  const logout = async (): Promise<{ success: boolean; error?: AuthError }> => {
+    loading.value = true;
+    error.value = null;
 
-            // Update display name if provided
-            if (displayName && userCredential.user) {
-                await updateProfile(userCredential.user, { displayName });
-            }
+    try {
+      await signOut(auth);
+      return { success: true };
+    } catch (err: any) {
+      const authError = handleAuthError(err);
+      error.value = authError.message;
+      return { success: false, error: authError };
+    } finally {
+      loading.value = false;
+    }
+  };
 
-            return { success: true };
-        } catch (err: any) {
-            const authError = handleAuthError(err);
-            error.value = authError.message;
-            return { success: false, error: authError };
-        } finally {
-            loading.value = false;
-        }
-    };
+  /**
+   * Send password reset email
+   */
+  const resetPassword = async (
+    email: string,
+  ): Promise<{ success: boolean; error?: AuthError }> => {
+    loading.value = true;
+    error.value = null;
 
-    /**
-     * Sign in an existing user with email and password
-     */
-    const login = async (
-        email: string,
-        password: string
-    ): Promise<{ success: boolean; error?: AuthError }> => {
-        loading.value = true;
-        error.value = null;
+    try {
+      await sendPasswordResetEmail(auth, email);
+      return { success: true };
+    } catch (err: any) {
+      const authError = handleAuthError(err);
+      error.value = authError.message;
+      return { success: false, error: authError };
+    } finally {
+      loading.value = false;
+    }
+  };
 
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            return { success: true };
-        } catch (err: any) {
-            const authError = handleAuthError(err);
-            error.value = authError.message;
-            return { success: false, error: authError };
-        } finally {
-            loading.value = false;
-        }
-    };
+  /**
+   * Clear error message
+   */
+  const clearError = () => {
+    error.value = null;
+  };
 
-    /**
-     * Sign out the current user
-     */
-    const logout = async (): Promise<{ success: boolean; error?: AuthError }> => {
-        loading.value = true;
-        error.value = null;
+  return {
+    // State
+    currentUser,
+    loading,
+    error,
+    isAuthenticated,
+    authInitialized,
 
-        try {
-            await signOut(auth);
-            return { success: true };
-        } catch (err: any) {
-            const authError = handleAuthError(err);
-            error.value = authError.message;
-            return { success: false, error: authError };
-        } finally {
-            loading.value = false;
-        }
-    };
-
-    /**
-     * Send password reset email
-     */
-    const resetPassword = async (
-        email: string
-    ): Promise<{ success: boolean; error?: AuthError }> => {
-        loading.value = true;
-        error.value = null;
-
-        try {
-            await sendPasswordResetEmail(auth, email);
-            return { success: true };
-        } catch (err: any) {
-            const authError = handleAuthError(err);
-            error.value = authError.message;
-            return { success: false, error: authError };
-        } finally {
-            loading.value = false;
-        }
-    };
-
-    /**
-     * Clear error message
-     */
-    const clearError = () => {
-        error.value = null;
-    };
-
-    return {
-        // State
-        currentUser,
-        loading,
-        error,
-        isAuthenticated,
-        authInitialized,
-
-        // Methods
-        signup,
-        login,
-        logout,
-        resetPassword,
-        clearError
-    };
+    // Methods
+    signup,
+    login,
+    logout,
+    resetPassword,
+    clearError,
+  };
 }
 
 /**
  * Handle Firebase Auth errors and return user-friendly messages
  */
 function handleAuthError(err: any): AuthError {
-    const code = err.code || 'unknown';
-    let message = 'An error occurred. Please try again.';
+  const code = err.code || "unknown";
+  let message = "An error occurred. Please try again.";
 
-    switch (code) {
-        case 'auth/email-already-in-use':
-            message = 'This email is already registered. Please login instead.';
-            break;
-        case 'auth/invalid-email':
-            message = 'Invalid email address.';
-            break;
-        case 'auth/operation-not-allowed':
-            message = 'Email/password authentication is not enabled.';
-            break;
-        case 'auth/weak-password':
-            message = 'Password is too weak. Please use at least 6 characters.';
-            break;
-        case 'auth/user-disabled':
-            message = 'This account has been disabled.';
-            break;
-        case 'auth/user-not-found':
-            message = 'No account found with this email.';
-            break;
-        case 'auth/wrong-password':
-            message = 'Incorrect password.';
-            break;
-        case 'auth/invalid-credential':
-            message = 'Invalid email or password.';
-            break;
-        case 'auth/too-many-requests':
-            message = 'Too many failed attempts. Please try again later.';
-            break;
-        default:
-            message = err.message || message;
-    }
+  switch (code) {
+    case "auth/email-already-in-use":
+      message = "This email is already registered. Please login instead.";
+      break;
+    case "auth/invalid-email":
+      message = "Invalid email address.";
+      break;
+    case "auth/operation-not-allowed":
+      message = "Email/password authentication is not enabled.";
+      break;
+    case "auth/weak-password":
+      message = "Password is too weak. Please use at least 6 characters.";
+      break;
+    case "auth/user-disabled":
+      message = "This account has been disabled.";
+      break;
+    case "auth/user-not-found":
+      message = "No account found with this email.";
+      break;
+    case "auth/wrong-password":
+      message = "Incorrect password.";
+      break;
+    case "auth/invalid-credential":
+      message = "Invalid email or password.";
+      break;
+    case "auth/too-many-requests":
+      message = "Too many failed attempts. Please try again later.";
+      break;
+    default:
+      message = err.message || message;
+  }
 
-    return {
-        code,
-        message
-    };
+  return {
+    code,
+    message,
+  };
 }

@@ -5,7 +5,6 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/tabs/exercises"></ion-back-button>
         </ion-buttons>
-        <ion-title>{{ exercise?.name || 'Exercise Detail' }}</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -19,18 +18,11 @@
             <p>Video Preview</p>
           </div>
         </div>
-        <div v-else class="image-container">
-           <img 
-            v-if="!imageError"
-            :src="exercise.picture || `/assets/exercises/${exercise.extId}.png`" 
-            @error="imageError = true"
-            alt="Exercise Image"
-            class="exercise-image"
-           />
-           <div v-if="imageError" class="media-placeholder">
-            <ion-icon :icon="imageOutline" size="large"></ion-icon>
-            <p>No Image Available</p>
-          </div>
+        <ExerciseImage :exercise-id="exercise.extId" size="lg" />
+
+        <div class="badges">
+          <ExerciseCategoryLabel :category="exercise.category" />
+          <ExerciseTypeLabel :type="exercise.type" />
         </div>
       </div>
 
@@ -38,12 +30,6 @@
         <!-- Header Info -->
         <div class="header-info">
           <h1>{{ exercise.name }}</h1>
-          <div class="badges">
-            <ion-badge :color="getTypeColor(exercise.type)">{{ exercise.type }}</ion-badge>
-            <ion-chip :color="getCategoryColor(exercise.category)" outline>
-              <ion-label>{{ exercise.category }}</ion-label>
-            </ion-chip>
-          </div>
         </div>
 
         <!-- Tabs -->
@@ -155,35 +141,7 @@
         </div>
 
         <div v-if="selectedTab === 'similar'" class="tab-content">
-           <div v-if="loadingSimilar" class="ion-text-center ion-padding">
-              <ion-spinner></ion-spinner>
-           </div>
-           <ion-list v-else-if="similarExercises.length > 0">
-             <ion-item button v-for="related in similarExercises" :key="related.id" :router-link="'/exercises/' + related.id" detail>
-                <ion-thumbnail slot="start">
-                  <img 
-                    :src="related.picture || `/assets/exercises/${related.id}.png`" 
-                    @error="(e) => (e.target as any).src = '/assets/icon/icon.png'"
-                    alt="Exercise"
-                  />
-                </ion-thumbnail>
-                <ion-label>
-                  <h2>{{ related.name }}</h2>
-                  <div class="meta-info">
-                   <ion-chip :color="getCategoryColor(related.category)" size="small">
-                      <ion-label>{{ related.category }}</ion-label>
-                   </ion-chip>
-                    <ion-badge :color="getTypeColor(related.type)">{{ related.type }}</ion-badge>
-                  </div>
-                </ion-label>
-             </ion-item>
-           </ion-list>
-           <ion-card v-else>
-             <ion-card-content class="ion-text-center">
-               <ion-icon :icon="trendingUpOutline" class="large-icon" style="color: var(--ion-color-medium);"></ion-icon>
-               <p>No similar exercises found.</p>
-             </ion-card-content>
-           </ion-card>
+          <SimilarExercisesList :exercise="exercise" />
         </div>
 
       </div>
@@ -209,11 +167,8 @@ import {
   IonToolbar,
   IonButtons,
   IonBackButton,
-  IonTitle,
   IonContent,
   IonIcon,
-  IonBadge,
-  IonChip,
   IonLabel,
   IonSegment,
   IonSegmentButton,
@@ -226,16 +181,18 @@ import {
   IonList,
   IonItem,
   IonNote,
-  IonThumbnail,
 } from '@ionic/vue';
 import { 
-  playCircleOutline, 
-  imageOutline, 
+  playCircleOutline,
   trendingUpOutline 
 } from 'ionicons/icons';
 import { useFirebase } from '@/composables/useFirebase';
 import { useAuth } from '@/composables/useAuth';
-import { Collections, type Exercise, type Progress, ExerciseCategory, ExerciseType } from '@/types/firebase.types';
+import { Collections, type Exercise, type Progress, ExerciseCategory } from '@/types/firebase.types';
+import ExerciseImage from '@/components/ExerciseImage.vue';
+import ExerciseTypeLabel from '@/components/ExerciseTypeLabel.vue';
+import ExerciseCategoryLabel from '@/components/ExerciseCategoryLabel.vue';
+import SimilarExercisesList from '@/components/SimilarExercisesList.vue';
 
 const route = useRoute();
 const { getById, loading, document: exercise } = useFirebase<Exercise>(Collections.EXERCISES);
@@ -322,93 +279,13 @@ onMounted(async () => {
   if (id) {
     await getById(id);
     await fetchProgressRecords(id);
-    if (exercise.value?.similar && exercise.value.similar.length > 0) {
-        await fetchSimilarExercises(exercise.value.similar);
-    }
   }
 });
-
-const similarExercises = ref<Exercise[]>([]);
-const loadingSimilar = ref(false);
-
-const fetchSimilarExercises = async (similarIds: string[]) => {
-    loadingSimilar.value = true;
-    try {
-        const { getAll, documents } = useFirebase<Exercise>(Collections.EXERCISES);
-        await getAll({
-             where: [{ field: 'documentId', operator: 'in', value: similarIds }] 
-             // Note: 'documentId' might not work directly in 'where' depending on implementation of useFirebase wrapper or Firestore SDK version (should use documentId() or __name__). 
-             // But usually 'in' query works on IDs if we treat them as fields or use special sentinel.
-             // Standard Firestore: where(documentId(), 'in', ids).
-             // Let's look at useFirebase impl or just fetch all and filter client side if we strictly need to?
-             // Or safer: loop getById if small number.
-        });
-        
-        // Actually, looking at useFirebase types, we pass 'where' array.
-        // If the abstraction supports it.
-        // Let's try fetching One by One since similar exercises are usually few (avg 3-4).
-        // This avoids complex "IN" query issues with document IDs if the abstraction doesn't handle '__name__' key well.
-        
-        const results: Exercise[] = [];
-        const { getById: getSingle } = useFirebase<Exercise>(Collections.EXERCISES);
-        
-        // Create parallel promises
-        const promises = similarIds.map(sid => {
-            // We need a fresh composable or just raw firestore logic?
-            // useFirebase shares state if we use the SAME instance variables.
-            // But getById returns a specific doc reference.
-            // Let's just use a loop.
-            return getSingle(sid);
-        });
-        
-        const docs = await Promise.all(promises);
-        similarExercises.value = docs.filter(d => !!d) as Exercise[];
-        
-    } catch (e) {
-        console.error("Error fetching similar exercises", e);
-    } finally {
-        loadingSimilar.value = false;
-    }
-};
-
-/**
- * Get color for exercise type badge
- */
-const getTypeColor = (type: ExerciseType): string => {
-  switch (type) {
-    case ExerciseType.FREE_WEIGHTS:
-      return 'primary';
-    case ExerciseType.MACHINES:
-      return 'secondary';
-    case ExerciseType.CABLE_MACHINE:
-      return 'tertiary';
-    case ExerciseType.NO_EQUIPMENT:
-      return 'success';
-    default:
-      return 'medium';
-  }
-};
-
-/**
- * Get color for category chip
- */
-const getCategoryColor = (category: ExerciseCategory): string => {
-  const colors: Record<ExerciseCategory, string> = {
-    [ExerciseCategory.CHEST]: 'danger',
-    [ExerciseCategory.BACK]: 'primary',
-    [ExerciseCategory.SHOULDERS]: 'warning',
-    [ExerciseCategory.BICEPS]: 'secondary',
-    [ExerciseCategory.TRICEPS]: 'tertiary',
-    [ExerciseCategory.LEGS]: 'success',
-    [ExerciseCategory.CARDIO]: 'danger',
-    [ExerciseCategory.ABS]: 'medium'
-  };
-  return colors[category] || 'medium';
-};
 </script>
 
 <style scoped>
 .media-container {
+  position: relative;
   width: 100%;
   height: 250px;
   background-color: #f0f0f0;
@@ -434,6 +311,12 @@ const getCategoryColor = (category: ExerciseCategory): string => {
   gap: 0.5rem;
 }
 
+.media-container__label {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+}
+
 .header-info {
   margin-bottom: 1.5rem;
 }
@@ -441,13 +324,19 @@ const getCategoryColor = (category: ExerciseCategory): string => {
 .header-info h1 {
   font-size: 1.75rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  margin: 0;
 }
 
 .badges {
+  position: absolute;
+  right: 1rem;
+  left: 1rem;
+  width: calc(100% - 2rem);
+  bottom: 1rem;
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
 }
 

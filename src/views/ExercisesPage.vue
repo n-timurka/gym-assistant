@@ -1,28 +1,130 @@
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonCard,
+  IonCardContent,
+  IonSpinner,
+  IonIcon,
+  IonChip,
+  IonLabel,
+  IonBadge,
+  IonButton,
+  IonButtons,
+  IonSearchbar,
+  IonList,
+  IonModal,
+} from '@ionic/vue';
+import { barbellOutline, funnelOutline } from 'ionicons/icons';
+import { useFirebase } from '@/composables/useFirebase';
+import { Collections, type Exercise, ExerciseCategory, ExerciseType } from '@/types/firebase.types';
+import ExerciseListItem from '@/components/ExerciseListItem.vue';
+
+// Initialize Firebase composable for exercises
+const {
+  documents: exercises,
+  loading,
+  error,
+  subscribe,
+} = useFirebase<Exercise>(Collections.EXERCISES);
+
+// Filter state
+const selectedCategory = ref<ExerciseCategory | null>(null);
+const selectedType = ref<ExerciseType | null>(null);
+const searchQuery = ref('');
+const showFilterModal = ref(false);
+
+// Categories for filter chips
+const categories = Object.values(ExerciseCategory);
+
+// Exercise types for filter chips
+const exerciseTypes = Object.values(ExerciseType);
+
+// Filtered exercises
+const filteredExercises = computed(() => {
+  let filtered = exercises.value;
+
+  // Filter by category
+  if (selectedCategory.value !== null) {
+    filtered = filtered.filter(ex => ex.category === selectedCategory.value);
+  }
+
+  // Filter by type
+  if (selectedType.value !== null) {
+    filtered = filtered.filter(ex => ex.type === selectedType.value);
+  }
+
+  // Filter by search query
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase().trim();
+    filtered = filtered.filter(ex =>
+      ex.name.toLowerCase().includes(query)
+    );
+  }
+
+  return filtered;
+});
+
+// Active filter count
+const activeFilterCount = computed(() => {
+  let count = 0;
+  if (selectedCategory.value !== null) count++;
+  if (selectedType.value !== null) count++;
+  return count;
+});
+
+/**
+ * Clear all filters
+ */
+const clearFilters = () => {
+  selectedCategory.value = null;
+  selectedType.value = null;
+};
+
+// Real-time subscription
+let unsubscribe: (() => void) | null = null;
+
+/**
+ * Setup real-time subscription on component mount
+ */
+onMounted(() => {
+  unsubscribe = subscribe(
+    {
+      orderBy: {
+        field: 'name',
+        direction: 'asc'
+      }
+    },
+    (docs) => {
+      console.log('Real-time update received:', docs.length, 'exercises');
+    }
+  );
+});
+
+/**
+ * Cleanup subscription on component unmount
+ */
+onUnmounted(() => {
+  if (unsubscribe) {
+    unsubscribe();
+  }
+});
+</script>
+
 <template>
-  <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Exercises</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content :fullscreen="true">
+  <IonPage>
+    <IonHeader>
+      <IonToolbar>
+        <IonTitle>Exercises</IonTitle>
+      </IonToolbar>
+    </IonHeader>
+
+    <IonContent :fullscreen="true">
       <div class="ion-padding">
-        <!-- Seeding Status -->
-        <ion-card v-if="seeding" color="primary">
-          <ion-card-content class="seeding-status">
-            <ion-spinner name="crescent"></ion-spinner>
-            <span>Seeding exercises database...</span>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Success Message -->
-        <ion-card v-if="seedSuccess" color="success">
-          <ion-card-content>
-            <ion-icon :icon="checkmarkCircleOutline"></ion-icon>
-            Successfully processed {{ seedCount }} exercises!
-          </ion-card-content>
-        </ion-card>
-
         <!-- Error Message -->
         <ion-card v-if="error" color="danger">
           <ion-card-content>
@@ -32,12 +134,12 @@
 
         <!-- Search Bar with Filter Button -->
         <div class="search-filter-section">
-          <ion-searchbar
+          <IonSearchbar
             v-model="searchQuery"
             placeholder="Search exercises by name"
             :debounce="300"
             show-clear-button="focus"
-          ></ion-searchbar>
+          />
           <ion-button fill="clear" @click="showFilterModal = true">
             <ion-icon slot="start" :icon="funnelOutline"></ion-icon>
             <ion-badge v-if="activeFilterCount > 0" color="primary">
@@ -47,12 +149,11 @@
         </div>
 
         <!-- Loading Spinner -->
-        <div v-if="loading && !seeding" class="ion-text-center ion-padding">
-          <ion-spinner></ion-spinner>
+        <div v-if="loading" class="ion-text-center ion-padding">
+          <IonSpinner />
         </div>
-
         <!-- Empty State -->
-        <ion-card v-if="!loading && filteredExercises.length === 0">
+        <ion-card v-else-if="filteredExercises.length === 0">
           <ion-card-content class="empty-state">
             <ion-icon :icon="barbellOutline" class="empty-icon"></ion-icon>
             <h2>No exercises found</h2>
@@ -63,38 +164,12 @@
         </ion-card>
 
         <!-- Exercises List -->
-        <ion-list v-if="!loading && filteredExercises.length > 0">
-          <ion-item
+        <IonList v-else>
+          <ExerciseListItem
             v-for="exercise in filteredExercises"
             :key="exercise.id"
-            button
-            :router-link="'/exercises/' + exercise.id"
-            detail
-          >
-            <ion-thumbnail slot="start">
-              <img
-                v-if="!imageErrorMap[String(exercise.id)]"
-                :src="getExerciseImage(exercise)"
-                alt="Exercise"
-                @error="handleImageError(String(exercise.id))"
-              />
-              <div v-else class="placeholder-thumbnail">
-                <ion-icon :icon="imageOutline"></ion-icon>
-              </div>
-            </ion-thumbnail>
-            <ion-label>
-              <h2>{{ exercise.name }}</h2>
-              <div class="exercise-meta">
-                <ion-chip :color="getCategoryColor(exercise.category)" size="small">
-                  <ion-label>{{ exercise.category }}</ion-label>
-                </ion-chip>
-                <ion-badge color="light">
-                  {{ exercise.type }}
-                </ion-badge>
-              </div>
-            </ion-label>
-          </ion-item>
-        </ion-list>
+            :exercise="exercise" />
+        </IonList>
 
         <!-- Exercise Count -->
         <div v-if="!loading && filteredExercises.length > 0" class="exercise-count">
@@ -171,174 +246,11 @@
           </div>
         </ion-content>
       </ion-modal>
-    </ion-content>
-  </ion-page>
+    </IonContent>
+  </IonPage>
 </template>
 
-<script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonCard,
-  IonCardContent,
-  IonSpinner,
-  IonIcon,
-  IonChip,
-  IonLabel,
-  IonBadge,
-  IonButton,
-  IonButtons,
-  IonSearchbar,
-  IonList,
-  IonItem,
-  IonModal,
-  IonThumbnail,
-} from '@ionic/vue';
-import {
-  barbellOutline,
-  downloadOutline,
-  checkmarkCircleOutline,
-  funnelOutline,
-  imageOutline
-} from 'ionicons/icons';
-import { useFirebase } from '@/composables/useFirebase';
-import { Collections, type Exercise, ExerciseCategory, ExerciseType } from '@/types/firebase.types';
-
-// Initialize Firebase composable for exercises
-const {
-  documents: exercises,
-  loading,
-  error,
-  subscribe,
-} = useFirebase<Exercise>(Collections.EXERCISES);
-
-// Seeding state
-const seeding = ref(false);
-const seedSuccess = ref(false);
-const seedCount = ref(0);
-
-// Filter state
-const selectedCategory = ref<ExerciseCategory | null>(null);
-const selectedType = ref<ExerciseType | null>(null);
-const searchQuery = ref('');
-const showFilterModal = ref(false);
-
-const imageErrorMap = ref<Record<string, boolean>>({});
-
-// Categories for filter chips
-const categories = Object.values(ExerciseCategory);
-
-// Exercise types for filter chips
-const exerciseTypes = Object.values(ExerciseType);
-
-// Filtered exercises
-const filteredExercises = computed(() => {
-  let filtered = exercises.value;
-
-  // Filter by category
-  if (selectedCategory.value !== null) {
-    filtered = filtered.filter(ex => ex.category === selectedCategory.value);
-  }
-
-  // Filter by type
-  if (selectedType.value !== null) {
-    filtered = filtered.filter(ex => ex.type === selectedType.value);
-  }
-
-  // Filter by search query
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase().trim();
-    filtered = filtered.filter(ex =>
-      ex.name.toLowerCase().includes(query)
-    );
-  }
-
-  return filtered;
-});
-
-// Active filter count
-const activeFilterCount = computed(() => {
-  let count = 0;
-  if (selectedCategory.value !== null) count++;
-  if (selectedType.value !== null) count++;
-  return count;
-});
-
-/**
- * Clear all filters
- */
-const clearFilters = () => {
-  selectedCategory.value = null;
-  selectedType.value = null;
-};
-
-/**
- * Get color for category chip
- */
-const getCategoryColor = (category: ExerciseCategory): string => {
-  const colors: Record<ExerciseCategory, string> = {
-    [ExerciseCategory.CHEST]: 'danger',
-    [ExerciseCategory.BACK]: 'primary',
-    [ExerciseCategory.SHOULDERS]: 'warning',
-    [ExerciseCategory.BICEPS]: 'secondary',
-    [ExerciseCategory.TRICEPS]: 'tertiary',
-    [ExerciseCategory.LEGS]: 'success',
-    [ExerciseCategory.ABS]: 'medium',
-    [ExerciseCategory.CARDIO]: 'medium',
-  };
-  return colors[category] || 'medium';
-};
-
-const getExerciseImage = (exercise: Exercise) => {
-    return exercise.picture || `/assets/exercises/${exercise.extId}.png`;
-}
-
-const handleImageError = (id: string) => {
-    imageErrorMap.value[id] = true;
-}
-
-// Real-time subscription
-let unsubscribe: (() => void) | null = null;
-
-/**
- * Setup real-time subscription on component mount
- */
-onMounted(() => {
-  unsubscribe = subscribe(
-    {
-      orderBy: {
-        field: 'name',
-        direction: 'asc'
-      }
-    },
-    (docs) => {
-      console.log('Real-time update received:', docs.length, 'exercises');
-    }
-  );
-});
-
-/**
- * Cleanup subscription on component unmount
- */
-onUnmounted(() => {
-  if (unsubscribe) {
-    unsubscribe();
-  }
-});
-
-</script>
-
 <style scoped>
-.seeding-status {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
 .search-filter-section {
   display: flex;
   gap: 0.5rem;

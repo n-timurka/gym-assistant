@@ -17,10 +17,7 @@
       <!-- Info Block -->
       <div v-if="showInfo" class="info-block ion-margin-bottom">
         <div class="info-image-container">
-            <img v-if="!imageError && exerciseImage" :src="exerciseImage" @error="imageError = true" class="info-image" />
-            <div v-else class="placeholder-image">
-                <ion-icon :icon="imageOutline"></ion-icon>
-            </div>
+          <ExerciseImage :exerciseId="exercise.exercise?.extId" size="xs" />
         </div>
         <div class="info-description">
             <p v-if="exerciseDescription">{{ exerciseDescription }}</p>
@@ -94,8 +91,9 @@ import {
   IonInput,
   IonCheckbox
 } from '@ionic/vue';
-import { trashOutline, closeOutline, chevronDownOutline, chevronUpOutline, imageOutline } from 'ionicons/icons';
+import { trashOutline, closeOutline, chevronDownOutline, chevronUpOutline } from 'ionicons/icons';
 import { WorkoutExercise, ExerciseSet, ExerciseCategory } from '@/types/firebase.types';
+import ExerciseImage from '../ExerciseImage.vue';
 
 const props = withDefaults(defineProps<{
   exercise: WorkoutExercise;
@@ -126,7 +124,6 @@ const emit = defineEmits<{
 }>();
 
 const isCollapsed = ref(props.isCollapsible);
-const imageError = ref(false);
 
 const toggleCollapse = () => {
   if (props.isCollapsible) {

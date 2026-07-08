@@ -1,15 +1,13 @@
 <template>
-  <transition name="slide-up">
-    <div class="timer-overlay">
-      <div class="timer-content">
-        <div class="timer-label">Rest Time</div>
-        <div class="timer-value">{{ timeDisplay }}</div>
-      </div>
-      <ion-button fill="clear" color="light" @click="$emit('stop-timer')">
-        <ion-icon :icon="closeOutline" slot="icon-only"></ion-icon>
-      </ion-button>
+  <div class="timer-overlay">
+    <div class="timer-content">
+      <div class="timer-label">Rest Time</div>
+      <div class="timer-value">{{ timeDisplay }}</div>
     </div>
-  </transition>
+    <ion-button fill="clear" color="light" @click="$emit('stop-timer')">
+      <ion-icon :icon="closeOutline" slot="icon-only"></ion-icon>
+    </ion-button>
+  </div>
 </template>
 
 <script setup lang="ts">

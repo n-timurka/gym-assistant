@@ -1,21 +1,15 @@
 <template>
-  <ion-page>
-    <workout-header
-      :workout-date-display="workoutDateDisplay"
-      :workout-status="workoutStatus"
-      @start-training="startTraining"
-      @end-training="endTraining"
-    />
+  <IonPage>
+    <WorkoutHeader :date="workoutDateDisplay" />
 
-    <ion-content :fullscreen="true">
+    <IonContent :fullscreen="true">
       <div v-if="loading" class="ion-text-center ion-padding">
-        <ion-spinner></ion-spinner>
+        <IonSpinner />
       </div>
 
-      <div v-else class="ion-padding-bottom h-full">
-        
+      <div v-else-if="workout" class="ion-padding-bottom h-full">
         <!-- Planned View -->
-        <workout-planned-view
+        <WorkoutPlannedView
           v-if="workoutStatus === WorkoutStatus.PLANNED"
           :exercises="workoutExercises"
           :all-exercises="exercises"
@@ -26,10 +20,11 @@
           @reorder="handleReorder"
           @clear-workout="clearWorkout"
           @open-add-modal="openAddExerciseModal"
-        ></workout-planned-view>
+          @add-exercises="addExercises"
+        />
 
         <!-- Ongoing View -->
-        <workout-ongoing-view
+        <WorkoutOngoingView
           v-else-if="workoutStatus === WorkoutStatus.ONGOING"
           :exercises="workoutExercises"
           :all-exercises="exercises"
@@ -44,16 +39,17 @@
           @swap-exercise="handleSwapExercise"
           @open-add-modal="openAddExerciseModal"
           @delete-exercise="deleteExercise"
-        ></workout-ongoing-view>
+        />
 
         <!-- Completed View -->
-        <workout-completed-view
+        <WorkoutCompletedView
           v-else-if="workoutStatus === WorkoutStatus.COMPLETED"
           :exercises="workoutExercises"
-          :all-exercises="exercises"
-        ></workout-completed-view>
-
+          :workout="workout"
+        />
       </div>
+
+      <div v-else>No workout</div>
 
       <add-exercise-modal
         :is-open="showAddModal"
@@ -78,25 +74,25 @@
           <ion-icon :icon="addOutline"></ion-icon>
         </ion-fab-button>
       </ion-fab>
-    </ion-content>
+    </IonContent>
 
-    <ion-footer>
-      <ion-toolbar>
-        <ion-button
+    <IonFooter>
+      <IonToolbar>
+        <IonButton
           v-if="workoutStatus === WorkoutStatus.ONGOING"
           expand="block" color="danger"
           @click="endTraining">
           Stop Training
-        </ion-button>
-        <ion-button
+        </IonButton>
+        <IonButton
           v-else-if="workoutStatus === WorkoutStatus.PLANNED"
           expand="block" color="success"
           @click="startTraining">
           Start Training
-        </ion-button>
-      </ion-toolbar>
-    </ion-footer>
-  </ion-page>
+        </IonButton>
+      </IonToolbar>
+    </IonFooter>
+  </IonPage>
 </template>
 
 <script setup lang="ts">
@@ -108,7 +104,6 @@ import {
   IonSpinner,
   alertController,
   actionSheetController,
-  toastController,
   IonFab,
   IonFabButton,
   IonIcon,
@@ -123,11 +118,9 @@ import { useTimer } from '@/composables/useTimer';
 import { Collections, type Workout, type WeekPlan, type WorkoutExercise, type Exercise, type ExerciseSet, type Progress, WorkoutStatus, ExerciseCategory } from '@/types/firebase.types';
 import { doc } from 'firebase/firestore';
 import { db } from '@/firebase.config';
-
 // Components
 import WorkoutHeader from '@/components/workout/WorkoutHeader.vue';
 import AddExerciseModal from '@/components/workout/AddExerciseModal.vue';
-// RestTimerOverlay moved to App.vue
 import WorkoutPlannedView from '@/components/workout/WorkoutPlannedView.vue';
 import WorkoutOngoingView from '@/components/workout/WorkoutOngoingView.vue';
 import WorkoutCompletedView from '@/components/workout/WorkoutCompletedView.vue';
@@ -140,7 +133,6 @@ const { currentUser } = useAuth();
 const { 
   getById: getWorkoutById, 
   update: updateWorkout,
-  loading: workoutLoading 
 } = useFirebase<Workout>(Collections.WORKOUTS);
 
 const { 
@@ -171,7 +163,7 @@ const showAddModal = ref(false);
 const swappingExerciseIndex = ref<number | null>(null);
 
 // Timer State
-const { startTimer, stopTimer, isTimerRunning } = useTimer();
+const { startTimer, isTimerRunning } = useTimer();
 const restTimeSeconds = ref(120); // Default 2 minutes
 let currentActionSheet: HTMLIonActionSheetElement | null = null;
 const unsubscribeFunctions: Array<() => void> = [];
@@ -254,7 +246,14 @@ const workoutDateDisplay = computed(() => {
 
 const workoutStatus = computed(() => workout.value?.status || WorkoutStatus.PLANNED);
 
-const workoutExercises = computed(() => workout.value?.exercises || []);
+const workoutExercises = computed(() => {
+  if (!workout.value) return [];
+
+  return workout.value.exercises.map(exercise => ({
+    ...exercise,
+    exercise: exercises.value.find(e => e.id === exercise.exerciseId)
+  }));
+});
 
 const completedExercisesCount = computed(() => {
   return workoutExercises.value.filter(ex => 
@@ -612,6 +611,10 @@ const updateWeekPlanSwap = async (oldExerciseId: string, newExerciseId: string) 
             exercises
         });
     }
+}
+
+const addExercises = (ids: string[]) => {
+  ids.forEach(id => addExerciseToWorkout(id));
 }
 
 const addExerciseToWorkout = async (exerciseId: string | number) => {

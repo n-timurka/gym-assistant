@@ -59,6 +59,12 @@ const routes: Array<RouteRecordRaw> = [
     name: 'WorkoutDetail',
     component: () => import('@/views/WorkoutDetailPage.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/programs/:id',
+    name: 'ProgramDetail',
+    component: () => import('@/views/ProgramDetailPage.vue'),
+    meta: { requiresAuth: true }
   }
 ];
 
@@ -102,4 +108,3 @@ router.beforeEach(async (to, from, next) => {
 });
 
 export default router;
-

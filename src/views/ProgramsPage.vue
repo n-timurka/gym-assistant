@@ -1,75 +1,63 @@
 <template>
-  <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Workout Programs</ion-title>
-      </ion-toolbar>
-    </ion-header>
+  <AppLayout title="Workout Programs" :loading="loading">
+    <!-- Empty State -->
+    <div v-if="programs.length === 0" class="empty-state">
+      <EmptyState
+        title="No programs yet"
+        description="Create your first workout program to get started!"
+        :action="{ label: 'Create Program', onClick: openCreateModal }"
+      />
+    </div>
 
-    <ion-content :fullscreen="true">
-      <div class="ion-padding">
-        <!-- Loading State -->
-        <div v-if="loading" class="ion-text-center ion-padding">
-          <ion-spinner></ion-spinner>
-        </div>
+    <!-- Programs List -->
+    <IonList v-else>
+      <IonCard
+        v-for="program in programs"
+        :key="program.id"
+        button
+        color="light"
+        @click="openProgram(program)">
+        <IonCardHeader class="ion-flex-column">
+          <IonCardSubtitle class="ion-display-flex ion-align-items-center ion-justify-content-between">
+            <IonBadge :color="program.isActive ? 'success' : 'danger'">
+              {{ program.isActive ? 'Active' : 'Inactive' }}
+            </IonBadge>
+            <span>{{ program.difficultyLevel }}</span>
+          </IonCardSubtitle>
+          <IonCardTitle>{{ program.name }}</IonCardTitle>
+        </IonCardHeader>
+        <IonCardContent>
+          <p v-if="program.description">{{ program.description }}</p>
+          <div class="ion-display-flex ion-align-items-center ion-justify-content-between">
+            <IonChip color="medium">Workouts: {{ program.workouts.length }}</IonChip>
+            <div>
+            <IonButton shape="round" @click.stop="openEditModal(program)">
+              <IonIcon slot="icon-only" :icon="pencil" />
+            </IonButton>
+            <IonButton shape="round" color="danger" @click.stop="confirmDelete(program)">
+              <IonIcon slot="icon-only" :icon="trash" />
+            </IonButton>
+            </div>
+          </div>
+        </IonCardContent>
+      </IonCard>
+    </IonList>
 
-        <!-- Error State -->
-        <ion-card v-else-if="error" color="danger">
-          <ion-card-content>
-            <p>{{ error }}</p>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Empty State -->
-        <div v-else-if="programs.length === 0" class="empty-state">
-          <empty-state
-            title="No programs yet"
-            description="Create your first workout program to get started!"
-            :action="{ label: 'Create Program', onClick: openCreateModal }"
-          />
-        </div>
-
-        <!-- Programs List -->
-        <ion-list v-else>
-          <ion-card v-for="program in programs" :key="program.id" class="program-card">
-            <ion-card-header>
-              <div class="program-header">
-                <ion-card-title>{{ program.name }}</ion-card-title>
-                <ion-badge :color="program.isActive ? 'success' : 'medium'">
-                  {{ program.isActive ? 'Active' : 'Inactive' }}
-                </ion-badge>
-              </div>
-              <ion-card-subtitle>{{ program.difficultyLevel }} • {{ program.workoutsPerWeek }} workouts/week</ion-card-subtitle>
-            </ion-card-header>
-            <ion-card-content>
-              <p v-if="program.description">{{ program.description }}</p>
-              <div class="program-actions">
-                <ion-button fill="clear" @click="openEditModal(program)">Edit</ion-button>
-                <ion-button fill="clear" color="danger" @click="confirmDelete(program)">Delete</ion-button>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-list>
-      </div>
-
-      <!-- FAB for creating new program -->
-      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-        <ion-fab-button @click="openCreateModal">
-          <ion-icon :icon="add"></ion-icon>
-        </ion-fab-button>
-      </ion-fab>
-    </ion-content>
-  </ion-page>
+    <!-- FAB for creating new program -->
+    <template #fab>
+      <IonFab slot="fixed" vertical="bottom" horizontal="end">
+        <IonFabButton @click="openCreateModal">
+          <IonIcon :icon="add" />
+        </IonFabButton>
+      </IonFab>
+    </template>
+  </AppLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
   IonCard,
   IonCardHeader,
   IonCardTitle,
@@ -81,18 +69,20 @@ import {
   IonBadge,
   IonFab,
   IonFabButton,
-  IonSpinner,
   modalController,
-  alertController
+  alertController,
+  IonChip,
 } from '@ionic/vue';
-import { add, listOutline, barbellOutline } from 'ionicons/icons';
+import { add, trash, pencil } from 'ionicons/icons';
 import { programService } from '@/services/programService';
 import { useAuth } from '@/composables/useAuth';
 import type { Program } from '@/types/firebase.types';
-import CreateProgramModal from '@/components/CreateProgramModal.vue';
+import ProgramSettingsModal from '@/components/ProgramSettingsModal.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import AppLayout from '@/components/AppLayout.vue';
 
 const { currentUser } = useAuth();
+const router = useRouter();
 const programs = ref<Program[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
@@ -114,7 +104,7 @@ onUnmounted(() => {
 
 const openCreateModal = async () => {
   const modal = await modalController.create({
-    component: CreateProgramModal
+    component: ProgramSettingsModal
   });
   modal.present();
 
@@ -122,7 +112,11 @@ const openCreateModal = async () => {
 
   if (role === 'confirm' && data) {
     try {
-      await programService.createProgram(data);
+      await programService.createProgram({
+        userId: currentUser.value?.uid || '',
+        ...data,
+        workouts: []
+      });
     } catch (err: any) {
       error.value = err.message;
     }
@@ -131,7 +125,7 @@ const openCreateModal = async () => {
 
 const openEditModal = async (program: Program) => {
   const modal = await modalController.create({
-    component: CreateProgramModal,
+    component: ProgramSettingsModal,
     componentProps: {
       program: program
     }
@@ -147,6 +141,10 @@ const openEditModal = async (program: Program) => {
       error.value = err.message;
     }
   }
+};
+
+const openProgram = (program: Program) => {
+  router.push(`/programs/${program.id}`);
 };
 
 const confirmDelete = async (program: Program) => {
@@ -171,48 +169,3 @@ const confirmDelete = async (program: Program) => {
   await alert.present();
 };
 </script>
-
-<style scoped>
-.header-section {
-  margin-bottom: 2rem;
-}
-
-.header-section h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.header-section p {
-  color: var(--ion-color-medium);
-  margin: 0;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 4rem 1rem;
-  color: var(--ion-color-medium);
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-}
-
-.program-card {
-  margin: 0 0 1rem 0;
-}
-
-.program-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.program-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-</style>
