@@ -1,100 +1,3 @@
-<template>
-  <IonPage>
-    <WorkoutHeader :date="workoutDateDisplay" />
-
-    <IonContent :fullscreen="true">
-      <div v-if="loading" class="ion-text-center ion-padding">
-        <IonSpinner />
-      </div>
-
-      <div v-else-if="workout" class="ion-padding-bottom h-full">
-        <!-- Planned View -->
-        <WorkoutPlannedView
-          v-if="workoutStatus === WorkoutStatus.PLANNED"
-          :exercises="workoutExercises"
-          :all-exercises="exercises"
-          @delete-exercise="deleteExercise"
-          @add-set="addSet"
-          @remove-set="removeSet"
-          @update-set="saveWorkoutDebounced"
-          @reorder="handleReorder"
-          @clear-workout="clearWorkout"
-          @open-add-modal="openAddExerciseModal"
-          @add-exercises="addExercises"
-        />
-
-        <!-- Ongoing View -->
-        <WorkoutOngoingView
-          v-else-if="workoutStatus === WorkoutStatus.ONGOING"
-          :exercises="workoutExercises"
-          :all-exercises="exercises"
-          :completed-exercises-count="completedExercisesCount"
-          :total-exercises-count="workoutExercises.length"
-          :workout-progress="workoutProgress"
-          @add-set="addSet"
-          @remove-set="removeSet"
-          @update-set="saveWorkoutDebounced"
-          @timer-requested="showRestTimerSheet"
-          @stop-training="endTraining"
-          @swap-exercise="handleSwapExercise"
-          @open-add-modal="openAddExerciseModal"
-          @delete-exercise="deleteExercise"
-        />
-
-        <!-- Completed View -->
-        <WorkoutCompletedView
-          v-else-if="workoutStatus === WorkoutStatus.COMPLETED"
-          :exercises="workoutExercises"
-          :workout="workout"
-        />
-      </div>
-
-      <div v-else>No workout</div>
-
-      <add-exercise-modal
-        :is-open="showAddModal"
-        :planned-exercises="swappingExerciseIndex === null ? plannedExercises : []"
-        :all-exercises="exercises"
-        :is-exercise-in-workout="swappingExerciseIndex === null ? isExerciseInWorkout : () => false"
-        :completed-exercise-ids="completedExercisesThisWeek"
-        :current-exercise-id="swappingExerciseIndex !== null && workout?.exercises[swappingExerciseIndex] ? workout.exercises[swappingExerciseIndex].exerciseId : null"
-        @close="closeAddModal"
-        @add-exercise="addExerciseToWorkout"
-      ></add-exercise-modal>
-
-      <!-- FAB for Planned View -->
-      <ion-fab 
-        v-if="workoutStatus === WorkoutStatus.PLANNED" 
-        vertical="bottom" 
-        horizontal="end" 
-        slot="fixed" 
-        class="ion-margin"
-      >
-        <ion-fab-button @click="openAddExerciseModal">
-          <ion-icon :icon="addOutline"></ion-icon>
-        </ion-fab-button>
-      </ion-fab>
-    </IonContent>
-
-    <IonFooter>
-      <IonToolbar>
-        <IonButton
-          v-if="workoutStatus === WorkoutStatus.ONGOING"
-          expand="block" color="danger"
-          @click="endTraining">
-          Stop Training
-        </IonButton>
-        <IonButton
-          v-else-if="workoutStatus === WorkoutStatus.PLANNED"
-          expand="block" color="success"
-          @click="startTraining">
-          Start Training
-        </IonButton>
-      </IonToolbar>
-    </IonFooter>
-  </IonPage>
-</template>
-
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -114,8 +17,17 @@ import {
 import { addOutline } from 'ionicons/icons';
 import { useFirebase } from '@/composables/useFirebase';
 import { useAuth } from '@/composables/useAuth';
-import { useTimer } from '@/composables/useTimer';
-import { Collections, type Workout, type WeekPlan, type WorkoutExercise, type Exercise, type ExerciseSet, type Progress, WorkoutStatus, ExerciseCategory } from '@/types/firebase.types';
+import {
+  Collections,
+  type Workout,
+  type WeekPlan,
+  type WorkoutExercise,
+  type Exercise,
+  type ExerciseSet,
+  type Progress,
+  WorkoutStatus,
+  ExerciseCategory,
+} from '@/types/firebase.types';
 import { doc } from 'firebase/firestore';
 import { db } from '@/firebase.config';
 // Components
@@ -124,6 +36,7 @@ import AddExerciseModal from '@/components/workout/AddExerciseModal.vue';
 import WorkoutPlannedView from '@/components/workout/WorkoutPlannedView.vue';
 import WorkoutOngoingView from '@/components/workout/WorkoutOngoingView.vue';
 import WorkoutCompletedView from '@/components/workout/WorkoutCompletedView.vue';
+import { useRestTimer } from '@/composables/useRestTimer';
 
 const route = useRoute();
 const workoutId = route.params.id as string;
@@ -163,7 +76,8 @@ const showAddModal = ref(false);
 const swappingExerciseIndex = ref<number | null>(null);
 
 // Timer State
-const { startTimer, isTimerRunning } = useTimer();
+// const { startTimer, isTimerRunning } = useTimer();
+const { start, isActive: isTimerRunning } = useRestTimer();
 const restTimeSeconds = ref(120); // Default 2 minutes
 let currentActionSheet: HTMLIonActionSheetElement | null = null;
 const unsubscribeFunctions: Array<() => void> = [];
@@ -172,7 +86,8 @@ const unsubscribeFunctions: Array<() => void> = [];
 // Global timer handles updates and completion
 
 const startRestTimer = async () => {
-    startTimer(restTimeSeconds.value);
+    // startTimer(restTimeSeconds.value);
+    start(restTimeSeconds.value);
     
     // Close selection sheet if open
     if (currentActionSheet) {
@@ -640,10 +555,11 @@ const addExerciseToWorkout = async (exerciseId: string | number) => {
   }
 
   const newExercise: WorkoutExercise = {
-    date: new Date().toISOString(),
     exerciseId: String(exerciseId),
     sets: initialSets,
-    order: swappingExerciseIndex.value !== null ? workout.value.exercises[swappingExerciseIndex.value].order : workout.value.exercises.length
+    order: swappingExerciseIndex.value !== null
+      ? workout.value.exercises[swappingExerciseIndex.value].order
+      : workout.value.exercises.length
   };
   
   if (swappingExerciseIndex.value !== null) {
@@ -729,4 +645,98 @@ onMounted(() => {
 });
 </script>
 
+<template>
+  <IonPage>
+    <WorkoutHeader :date="workoutDateDisplay" />
 
+    <IonContent :fullscreen="true">
+      <div v-if="loading" class="ion-text-center ion-padding">
+        <IonSpinner />
+      </div>
+
+      <div v-else-if="workout" class="ion-padding-bottom h-full">
+        <!-- Planned View -->
+        <WorkoutPlannedView
+          v-if="workoutStatus === WorkoutStatus.PLANNED"
+          :exercises="workoutExercises"
+          :all-exercises="exercises"
+          @delete-exercise="deleteExercise"
+          @add-set="addSet"
+          @remove-set="removeSet"
+          @update-set="saveWorkoutDebounced"
+          @reorder="handleReorder"
+          @clear-workout="clearWorkout"
+          @open-add-modal="openAddExerciseModal"
+          @add-exercises="addExercises"
+        />
+
+        <!-- Ongoing View -->
+        <WorkoutOngoingView
+          v-else-if="workoutStatus === WorkoutStatus.ONGOING"
+          :exercises="workoutExercises"
+          :all-exercises="exercises"
+          :completed-exercises-count="completedExercisesCount"
+          :total-exercises-count="workoutExercises.length"
+          :workout-progress="workoutProgress"
+          @add-set="addSet"
+          @remove-set="removeSet"
+          @update-set="saveWorkoutDebounced"
+          @timer-requested="showRestTimerSheet"
+          @stop-training="endTraining"
+          @swap-exercise="handleSwapExercise"
+          @open-add-modal="openAddExerciseModal"
+          @delete-exercise="deleteExercise"
+        />
+
+        <!-- Completed View -->
+        <WorkoutCompletedView
+          v-else-if="workoutStatus === WorkoutStatus.COMPLETED"
+          :exercises="workoutExercises"
+          :workout="workout"
+        />
+      </div>
+      <div v-else>No workout</div>
+
+      <add-exercise-modal
+        :is-open="showAddModal"
+        :planned-exercises="swappingExerciseIndex === null ? plannedExercises : []"
+        :all-exercises="exercises"
+        :is-exercise-in-workout="swappingExerciseIndex === null ? isExerciseInWorkout : () => false"
+        :completed-exercise-ids="completedExercisesThisWeek"
+        :current-exercise-id="swappingExerciseIndex !== null && workout?.exercises[swappingExerciseIndex] ? workout.exercises[swappingExerciseIndex].exerciseId : null"
+        @close="closeAddModal"
+        @add-exercise="addExerciseToWorkout"
+      />
+
+      <!-- FAB for Planned View -->
+      <IonFab 
+        v-if="workoutStatus === WorkoutStatus.PLANNED" 
+        vertical="bottom" 
+        horizontal="end" 
+        slot="fixed" 
+        class="ion-margin"
+      >
+        <IonFabButton @click="openAddExerciseModal">
+          <IonIcon :icon="addOutline" />
+        </IonFabButton>
+      </IonFab>
+    </IonContent>
+
+    <IonFooter>
+      <IonToolbar>
+        <IonButton
+          v-if="workoutStatus === WorkoutStatus.ONGOING"
+          expand="block" color="danger"
+          @click="endTraining">
+          Stop Training
+        </IonButton>
+        <IonButton
+          v-else-if="workoutStatus === WorkoutStatus.PLANNED"
+          expand="block" color="success"
+          @click="startTraining">
+          Start Training
+        </IonButton>
+      </IonToolbar>
+    </IonFooter>
+  </IonPage>
+</template>

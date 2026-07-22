@@ -1,59 +1,3 @@
-<template>
-  <AppLayout title="Workout Programs" :loading="loading">
-    <!-- Empty State -->
-    <div v-if="programs.length === 0" class="empty-state">
-      <EmptyState
-        title="No programs yet"
-        description="Create your first workout program to get started!"
-        :action="{ label: 'Create Program', onClick: openCreateModal }"
-      />
-    </div>
-
-    <!-- Programs List -->
-    <IonList v-else>
-      <IonCard
-        v-for="program in programs"
-        :key="program.id"
-        button
-        color="light"
-        @click="openProgram(program)">
-        <IonCardHeader class="ion-flex-column">
-          <IonCardSubtitle class="ion-display-flex ion-align-items-center ion-justify-content-between">
-            <IonBadge :color="program.isActive ? 'success' : 'danger'">
-              {{ program.isActive ? 'Active' : 'Inactive' }}
-            </IonBadge>
-            <span>{{ program.difficultyLevel }}</span>
-          </IonCardSubtitle>
-          <IonCardTitle>{{ program.name }}</IonCardTitle>
-        </IonCardHeader>
-        <IonCardContent>
-          <p v-if="program.description">{{ program.description }}</p>
-          <div class="ion-display-flex ion-align-items-center ion-justify-content-between">
-            <IonChip color="medium">Workouts: {{ program.workouts.length }}</IonChip>
-            <div>
-            <IonButton shape="round" @click.stop="openEditModal(program)">
-              <IonIcon slot="icon-only" :icon="pencil" />
-            </IonButton>
-            <IonButton shape="round" color="danger" @click.stop="confirmDelete(program)">
-              <IonIcon slot="icon-only" :icon="trash" />
-            </IonButton>
-            </div>
-          </div>
-        </IonCardContent>
-      </IonCard>
-    </IonList>
-
-    <!-- FAB for creating new program -->
-    <template #fab>
-      <IonFab slot="fixed" vertical="bottom" horizontal="end">
-        <IonFabButton @click="openCreateModal">
-          <IonIcon :icon="add" />
-        </IonFabButton>
-      </IonFab>
-    </template>
-  </AppLayout>
-</template>
-
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -169,3 +113,59 @@ const confirmDelete = async (program: Program) => {
   await alert.present();
 };
 </script>
+
+<template>
+  <AppLayout title="Workout Programs" :loading="loading">
+    <!-- Empty State -->
+    <div v-if="programs.length === 0" class="empty-state">
+      <EmptyState
+        title="No programs yet"
+        description="Create your first workout program to get started!"
+        :action="{ label: 'Create Program', onClick: openCreateModal }"
+      />
+    </div>
+
+    <!-- Programs List -->
+    <IonList v-else>
+      <IonCard
+        v-for="program in programs"
+        :key="program.id"
+        button
+        color="light"
+        @click="openProgram(program)">
+        <IonCardHeader class="ion-flex-column">
+          <IonCardSubtitle class="ion-display-flex ion-align-items-center ion-justify-content-between">
+            <IonBadge :color="program.isActive ? 'success' : 'danger'">
+              {{ program.isActive ? 'Active' : 'Inactive' }}
+            </IonBadge>
+            <span>{{ program.difficultyLevel }}</span>
+          </IonCardSubtitle>
+          <IonCardTitle>{{ program.name }}</IonCardTitle>
+        </IonCardHeader>
+        <IonCardContent>
+          <p v-if="program.description">{{ program.description }}</p>
+          <div class="ion-display-flex ion-align-items-center ion-justify-content-between">
+            <IonChip color="medium">Workouts: {{ program.workouts.length }}</IonChip>
+            <div>
+            <IonButton shape="round" @click.stop="openEditModal(program)">
+              <IonIcon slot="icon-only" :icon="pencil" />
+            </IonButton>
+            <IonButton shape="round" color="danger" @click.stop="confirmDelete(program)">
+              <IonIcon slot="icon-only" :icon="trash" />
+            </IonButton>
+            </div>
+          </div>
+        </IonCardContent>
+      </IonCard>
+    </IonList>
+
+    <!-- FAB for creating new program -->
+    <template #fab>
+      <IonFab slot="fixed" vertical="bottom" horizontal="end">
+        <IonFabButton @click="openCreateModal">
+          <IonIcon :icon="add" />
+        </IonFabButton>
+      </IonFab>
+    </template>
+  </AppLayout>
+</template>

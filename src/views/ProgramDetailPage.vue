@@ -35,7 +35,7 @@
           <ProgramWorkout
             v-for="(workout, index) in programWorkouts"
             :key="workout.id"
-            :workout="workout"
+            :exercises="workout.exercises"
             :index="index"
             @delete-workout="confirmDeleteWorkout"
             @add-exercise="openExerciseModal"
@@ -63,24 +63,7 @@ import {
   IonAccordionGroup,
   IonBadge,
   IonButton,
-  IonButtons,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonContent,
-  IonHeader,
   IonIcon,
-  IonInput,
-  IonItem,
-  IonItemOption,
-  IonItemOptions,
-  IonItemSliding,
-  IonLabel,
-  IonList,
-  IonModal,
-  IonSearchbar,
-  IonTitle,
-  IonToolbar,
   alertController,
 } from '@ionic/vue';
 import { addOutline } from 'ionicons/icons';
@@ -201,19 +184,6 @@ const removeExercise = async (workoutIndex: number, exerciseIndex: number) => {
 
   program.value.workouts[workoutIndex].exercises.splice(exerciseIndex, 1);
   await saveProgram();
-};
-
-const getExercise = (exerciseId: string) => {
-  return exercises.value.find(exercise => String(exercise.id) === String(exerciseId));
-};
-
-const getExerciseName = (exerciseId: string) => {
-  return getExercise(exerciseId)?.name || 'Unknown Exercise';
-};
-
-const getExerciseMeta = (exerciseId: string) => {
-  const exercise = getExercise(exerciseId);
-  return exercise ? `${exercise.category} · ${exercise.type}` : 'Exercise details unavailable';
 };
 
 onMounted(async () => {

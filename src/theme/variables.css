@@ -27,9 +27,10 @@ http://ionicframework.com/docs/theming/ */
     --muscle-back: 220 70% 55%;
     --muscle-legs: 150 65% 45%;
     --muscle-shoulders: 35 90% 55%;
-    --muscle-arms: 280 60% 55%;
-    --muscle-core: 45 85% 55%;
+    --muscle-biceps: 280 60% 55%;
+    --muscle-triceps: 45 85% 55%;
     --muscle-cardio: 340 75% 55%;
+    --muscle-abs: 0 0% 0%;
 }
 
 ion-header {
@@ -46,25 +47,28 @@ ion-header {
 .muscle-back { background-color: hsl(var(--muscle-back)); }
 .muscle-legs { background-color: hsl(var(--muscle-legs)); }
 .muscle-shoulders { background-color: hsl(var(--muscle-shoulders)); }
-.muscle-arms { background-color: hsl(var(--muscle-arms)); }
-.muscle-core { background-color: hsl(var(--muscle-core)); }
+.muscle-biceps { background-color: hsl(var(--muscle-biceps)); }
+.muscle-triceps { background-color: hsl(var(--muscle-triceps)); }
 .muscle-cardio { background-color: hsl(var(--muscle-cardio)); }
+.muscle-abs { background-color: hsl(var(--muscle-abs)); }
 
 .text-muscle-chest { color: hsl(var(--muscle-chest)); }
 .text-muscle-back { color: hsl(var(--muscle-back)); }
 .text-muscle-legs { color: hsl(var(--muscle-legs)); }
 .text-muscle-shoulders { color: hsl(var(--muscle-shoulders)); }
-.text-muscle-arms { color: hsl(var(--muscle-arms)); }
-.text-muscle-core { color: hsl(var(--muscle-core)); }
+.text-muscle-biceps { color: hsl(var(--muscle-biceps)); }
+.text-muscle-triceps { color: hsl(var(--muscle-triceps)); }
 .text-muscle-cardio { color: hsl(var(--muscle-cardio)); }
+.text-muscle-abs { color: hsl(var(--muscle-abs)); }
 
-.bg-muscle-chest-light { background-color: hsl(0 75% 58% / 0.12); }
-.bg-muscle-back-light { background-color: hsl(220 70% 55% / 0.12); }
-.bg-muscle-legs-light { background-color: hsl(150 65% 45% / 0.12); }
-.bg-muscle-shoulders-light { background-color: hsl(35 90% 55% / 0.12); }
-.bg-muscle-biceps-light { background-color: hsl(280 60% 55% / 0.12); }
-.bg-muscle-triceps-light { background-color: hsl(45 85% 55% / 0.12); }
-.bg-muscle-cardio-light { background-color: hsl(340 75% 55% / 0.12); }
+.bg-muscle-chest-light { background-color: hsl(var(--muscle-chest) / 0.12); }
+.bg-muscle-back-light { background-color: hsl(var(--muscle-back) / 0.12); }
+.bg-muscle-legs-light { background-color: hsl(var(--muscle-legs) / 0.12); }
+.bg-muscle-shoulders-light { background-color: hsl(var(--muscle-shoulders) / 0.12); }
+.bg-muscle-biceps-light { background-color: hsl(var(--muscle-biceps) / 0.12); }
+.bg-muscle-triceps-light { background-color: hsl(var(--muscle-triceps) / 0.12); }
+.bg-muscle-cardio-light { background-color: hsl(var(--muscle-cardio) / 0.12); }
+.bg-muscle-cardio-abs { background-color: hsl(var(--muscle-abs) / 0.12); }
 
 .gym-lime-gradient {
     background: linear-gradient(135deg, hsl(var(--ion-color-lime)), hsl(82 75% 45%));

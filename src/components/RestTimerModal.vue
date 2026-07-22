@@ -1,38 +1,26 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { useRestTimer } from '@/composables/useRestTimer';
 import { IonButton, IonIcon } from '@ionic/vue';
 import { closeOutline } from 'ionicons/icons';
 
-const { remainingSeconds } = defineProps<{
-  remainingSeconds: number;
-}>();
-
-defineEmits<{
-  (e: 'stop-timer'): void;
-}>();
-
-const timeDisplay = computed(() => {
-  const m = Math.floor(remainingSeconds / 60);
-  const s = remainingSeconds % 60;
-
-  return `${m}:${s.toString().padStart(2, '0')}`;
-});
+const { formattedTime, stop, isActive } = useRestTimer();
 </script>
 
 <template>
-  <div class="timer-overlay">
-    <div class="timer-content">
-      <div class="timer-label">Rest Time</div>
-      <div class="timer-value">{{ timeDisplay }}</div>
-    </div>
-    <IonButton fill="clear" color="light" @click="$emit('stop-timer')">
-      <IonIcon :icon="closeOutline" slot="icon-only" />
-    </IonButton>
-  </div>
+  <Transition>
+    <section v-if="isActive" class="timer-overlay">
+      <div class="timer-content">
+        <div class="timer-label">Rest Time</div>
+        <div class="timer-value">{{ formattedTime }}</div>
+      </div>
+      <IonButton fill="clear" color="light" @click="stop">
+        <IonIcon :icon="closeOutline" slot="icon-only" />
+      </IonButton>
+    </section>
+  </Transition>
 </template>
 
 <style scoped>
-/* Timer Overlay */
 .timer-overlay {
   position: fixed;
   bottom: 0;
@@ -48,7 +36,6 @@ const timeDisplay = computed(() => {
   box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
-
 .timer-content {
   display: flex;
   flex-direction: column;

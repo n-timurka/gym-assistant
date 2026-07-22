@@ -1,32 +1,34 @@
-<template>
-  <ion-app>
-    <div v-if="!authInitialized" class="auth-loading">
-      <ion-spinner name="crescent" />
-      <p>Loading...</p>
-    </div>
-    <ion-router-outlet v-else />
-    
-    <!-- Global Rest Timer Overlay -->
-    <transition name="slide-up">
-      <rest-timer-overlay
-        v-if="isTimerRunning"
-        :remaining-seconds="remainingSeconds"
-        @stop-timer="stopTimer"
-      ></rest-timer-overlay>
-    </transition>
-  </ion-app>
-</template>
-
 <script setup lang="ts">
 import { IonApp, IonRouterOutlet, IonSpinner } from '@ionic/vue';
 import { useAuth } from '@/composables/useAuth';
 import RestTimerOverlay from '@/components/workout/RestTimerOverlay.vue';
 import { useTimer } from '@/composables/useTimer';
+import RestTimerModal from './components/RestTimerModal.vue';
 
 // Initialize auth state
 const { authInitialized } = useAuth();
 const { isTimerRunning, remainingSeconds, stopTimer} = useTimer();
 </script>
+
+<template>
+  <IonApp>
+    <div v-if="!authInitialized" class="auth-loading">
+      <IonSpinner name="crescent" />
+      <p>Loading...</p>
+    </div>
+    <IonRouterOutlet v-else />
+    
+    <RestTimerModal />
+    <!-- Global Rest Timer Overlay -->
+    <transition name="slide-up">
+      <RestTimerOverlay
+        v-if="isTimerRunning"
+        :remaining-seconds="remainingSeconds"
+        @stop-timer="stopTimer"
+      />
+    </transition>
+  </IonApp>
+</template>
 
 <style scoped>
 .auth-loading {

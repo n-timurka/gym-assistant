@@ -72,7 +72,7 @@ const deleteWorkout = async () => {
       <IonSpinner />
     </div>
 
-    <div v-else class="workout-details">
+    <div v-else>
       <!-- No workout state -->
       <div class="empty-state" v-if="!workout">
         <IonIcon :icon="addOutline" />
@@ -130,12 +130,11 @@ const deleteWorkout = async () => {
 </template>
 
 <style scoped>
-.workout-details {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.workouts-list-container {
+  ion-item {
+    --inner-padding-end: 0;
+  }
 }
-
 .empty-state {
   display: flex; 
   padding-top: 4rem;

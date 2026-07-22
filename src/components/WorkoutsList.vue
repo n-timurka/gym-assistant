@@ -1,5 +1,5 @@
 <template>
-  <div class="workouts-list-container">
+  <div class="">
     <!-- Loading Spinner -->
     <div v-if="loading" class="ion-text-center ion-padding">
       <IonSpinner />

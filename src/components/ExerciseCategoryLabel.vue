@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ExerciseCategory } from '@/types/firebase.types';
-import { IonChip, IonIcon, IonLabel } from '@ionic/vue';
-import { barbell } from 'ionicons/icons';
+import { IonChip, IonLabel } from '@ionic/vue';
 import { computed } from 'vue';
 
 const { category, size = 'md' } = defineProps<{
@@ -11,7 +10,7 @@ const { category, size = 'md' } = defineProps<{
 
 const categoryClass = computed(() => 
   `bg-muscle-${category.toLowerCase()}-light text-muscle-${category.toLowerCase()}`);
-const iconClass = computed(() => `text-muscle-${category.toLowerCase()}`);
+const iconClass = computed(() => `muscle-${category.toLowerCase()}`);
 const sizeClass = computed(() => ({
   'sm': 'min-height: 8px; padding: 2px 12px;',
   'md': '',
@@ -21,7 +20,11 @@ const sizeClass = computed(() => ({
 
 <template>
   <IonChip :class="categoryClass" :style="sizeClass">
-    <IonIcon :icon="barbell" :class="iconClass" />
+    <span :class="iconClass" style="
+      width: 0.5em;
+      height: 0.5rem;
+      border-radius: 50%;
+      margin-right: 0.25rem;" />
     <IonLabel>{{ category }}</IonLabel>
   </IonChip>
 </template>

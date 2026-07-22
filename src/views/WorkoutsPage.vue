@@ -1,32 +1,5 @@
-<template>
-  <IonPage>
-    <IonHeader>
-      <IonToolbar>
-        <IonTitle>Workouts</IonTitle>
-      </IonToolbar>
-    </IonHeader>
-
-    <IonContent :fullscreen="true">
-      <div class="ion-padding">
-        <WeekNavigation v-model="currentWeekStart" />
-
-        <WeekDayNavigation v-model="selectedDate" :workouts="workouts" />
-
-        <WorkoutCard :date="selectedDate" :workout="selectedDateWorkout" :exercises="exercises" />
-      </div>
-    </IonContent>
-  </IonPage>
-</template>
-
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
-import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-} from '@ionic/vue';
 import { useFirebase } from '@/composables/useFirebase';
 import {
   Collections,
@@ -38,6 +11,7 @@ import { getStartOfWeek, getEndOfWeek, isSameDay } from '@/helpers/date.helper';
 import WeekNavigation from '@/components/WeekNavigation.vue';
 import WeekDayNavigation from '@/components/WeekDayNavigation.vue';
 import WorkoutCard from '@/components/workout/WorkoutCard.vue';
+import AppLayout from '@/components/AppLayout.vue';
 
 const { currentUser } = useAuth();
 // Initialize Firebase composable for workouts
@@ -143,3 +117,13 @@ onUnmounted(() => {
   }
 });
 </script>
+
+<template>
+  <AppLayout title="Workouts">
+    <WeekNavigation v-model="currentWeekStart" />
+
+    <WeekDayNavigation v-model="selectedDate" :workouts="workouts" />
+
+    <WorkoutCard :date="selectedDate" :workout="selectedDateWorkout" :exercises="exercises" />
+  </AppLayout>
+</template>

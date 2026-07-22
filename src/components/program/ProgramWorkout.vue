@@ -1,11 +1,24 @@
 <script setup lang="ts">
-import { type Workout } from '@/types/firebase.types';
-import { IonAccordion, IonBadge, IonButton, IonIcon, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonList, IonListHeader, IonNote } from '@ionic/vue';
+import { ProgramWorkoutExercise } from '@/types/firebase.types';
+import {
+  IonAccordion,
+  IonBadge,
+  IonButton,
+  IonIcon,
+  IonItem,
+  IonItemOption,
+  IonItemOptions,
+  IonItemSliding,
+  IonLabel,
+  IonList,
+  IonListHeader,
+  IonNote,
+} from '@ionic/vue';
 import { addOutline, trash, trashOutline } from 'ionicons/icons';
-import ExerciseCategoryLabel from '../ExerciseCategoryLabel.vue';
+import ExerciseCategoryLabel from '@/components/ExerciseCategoryLabel.vue';
 
 defineProps<{
-  workout: Workout,
+  exercises: ProgramWorkoutExercise[],
   index: number,
 }>();
 const emit = defineEmits<{
@@ -16,9 +29,9 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <IonAccordion :value="workout.id">
+  <IonAccordion :value="`workout-${index}`">
     <IonItem slot="header" color="light">
-      <IonBadge slot="start" color="medium">{{ workout.exercises.length }}</IonBadge>
+      <IonBadge slot="start" color="medium">{{ exercises.length }}</IonBadge>
       Workout {{ index + 1 }}
     </IonItem>
 
@@ -31,12 +44,12 @@ const emit = defineEmits<{
             Add
           </IonButton>
         </IonListHeader>
-        <IonItem v-if="workout.exercises.length === 0" class="ion-text-center">
+        <IonItem v-if="exercises.length === 0" class="ion-text-center">
           <IonNote>
             No exercises in this workout...
           </IonNote>
         </IonItem>
-        <IonItemSliding v-for="(exercise, exerciseIndex) in workout.exercises" :key="exercise.exerciseId">
+        <IonItemSliding v-for="(exercise, exerciseIndex) in exercises" :key="exercise.exerciseId">
           <IonItem v-if="exercise.exercise">
             <IonLabel>{{ exercise.exercise.name }}</IonLabel>
             <ExerciseCategoryLabel :category="exercise.exercise.category" size="sm" slot="end" />

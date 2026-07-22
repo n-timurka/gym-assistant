@@ -74,7 +74,6 @@ export interface ExerciseSet {
 }
 
 export interface WorkoutExercise {
-  date: string;
   exerciseId: string;
   exercise?: Exercise;
   sets: ExerciseSet[];
@@ -116,6 +115,7 @@ export interface Progress extends FirestoreDocument {
 
 export interface ProgramWorkoutExercise {
   exerciseId: string;
+  exercise?: Exercise;
   sets: number;
   reps: number;
   order?: number;

@@ -16,7 +16,7 @@ import {
 } from '@ionic/vue';
 import { addCircleOutline, checkmarkCircleOutline } from 'ionicons/icons';
 import { Exercise, ExerciseCategory } from '@/types/firebase.types';
-import ExerciseListItem from '../ExerciseListItem.vue';
+import ExerciseListItem from '@/components/ExerciseListItem.vue';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -27,9 +27,9 @@ const props = defineProps<{
   currentExerciseId?: string | null;
 }>();
 
-const emit = defineEmits<{
+const emits = defineEmits<{
   (e: 'close'): void;
-  (e: 'add-exercise', id: string | number): void;
+  (e: 'add-exercise', id: string): void;
 }>();
 
 const searchQuery = ref('');
@@ -43,7 +43,7 @@ const selectCategory = (category: ExerciseCategory) => {
 }
 9
 const categoryExercises = computed(
-  () => props.allExercises.filter(e => e.category === selectedCategory.value)
+  () => props.allExercises?.filter(e => e.category === selectedCategory.value)
 );
 </script>
 
@@ -82,7 +82,7 @@ const categoryExercises = computed(
           :display-category="false"
           :detailIcon="isExerciseInWorkout(ex.id) ? checkmarkCircleOutline : addCircleOutline"
           :is-link="false"
-          @click="emit('add-exercise', ex.id)"/>
+          @click="emits('add-exercise', ex.id)"/>
       </ion-list>
     </ion-content>
   </ion-modal>

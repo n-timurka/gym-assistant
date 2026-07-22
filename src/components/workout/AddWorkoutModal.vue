@@ -1,9 +1,24 @@
 <script setup lang="ts">
 import { useFirebase } from '@/composables/useFirebase';
-import { Collections, Exercise, Program, Workout } from '@/types/firebase.types';
-import { IonAccordion, IonAccordionGroup, IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonItemDivider, IonItemGroup, IonLabel, IonList, IonModal, IonTitle, IonToolbar } from '@ionic/vue';
+import { Collections, Exercise, Program, ProgramWorkoutExercise } from '@/types/firebase.types';
+import {
+  IonAccordion,
+  IonAccordionGroup,
+  IonBadge,
+  IonButton,
+  IonButtons,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonItem, 
+  IonLabel,
+  IonList,
+  IonModal,
+  IonTitle,
+  IonToolbar,
+} from '@ionic/vue';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import ExerciseCategoryLabel from '../ExerciseCategoryLabel.vue';
+import ExerciseCategoryLabel from '@/components/ExerciseCategoryLabel.vue';
 import { add } from 'ionicons/icons';
 
 const emits = defineEmits<{
@@ -38,8 +53,8 @@ const programWithExercises = computed(() => programs.value.map(program => ({
   }))
 })));
 
-const selectWorkout = (workout: Workout) => {
-  emits('select-workout', workout.exercises.map(e => e.exerciseId));
+const selectWorkout = (exercises: ProgramWorkoutExercise[]) => {
+  emits('select-workout', exercises.map(e => e.exerciseId));
 }
 
 // Real-time subscription
@@ -106,7 +121,7 @@ onUnmounted(() => {
                     </IonItem>
                   </IonList>
                   <div class="ion-display-flex ion-justify-content-center">
-                    <IonButton color="primary" @click="selectWorkout(workout)">
+                    <IonButton color="primary" @click="selectWorkout(workout.exercises)">
                       <IonIcon :icon="add" />
                       Add
                     </IonButton>

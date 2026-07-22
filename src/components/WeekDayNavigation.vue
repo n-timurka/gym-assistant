@@ -54,8 +54,6 @@ const hasWorkout = (date: Date) => {
 .week-days-container {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
-  padding: 1rem 0 0;
 }
 
 .day-card {
