@@ -19,6 +19,7 @@ export default defineConfig({
         "assets/icon/*.png",
         "assets/icon/*.svg",
         "browserconfig.xml",
+        "sounds/alarm.mp3",
       ],
       manifest: {
         name: "Gym Assistant",
@@ -63,6 +64,11 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,ico,svg,webp,woff2}"],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.destination === "audio",
+            handler: "CacheFirst",
+            options: { cacheName: "audio-cache" },
+          },
           {
             urlPattern: ({ request, url }) =>
               request.destination === "image" ||

@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { IonApp, IonRouterOutlet, IonSpinner } from '@ionic/vue';
 import { useAuth } from '@/composables/useAuth';
-import RestTimerOverlay from '@/components/workout/RestTimerOverlay.vue';
-import { useTimer } from '@/composables/useTimer';
 import RestTimerModal from './components/RestTimerModal.vue';
 
 // Initialize auth state
 const { authInitialized } = useAuth();
-const { isTimerRunning, remainingSeconds, stopTimer} = useTimer();
 </script>
 
 <template>
@@ -19,14 +16,6 @@ const { isTimerRunning, remainingSeconds, stopTimer} = useTimer();
     <IonRouterOutlet v-else />
     
     <RestTimerModal />
-    <!-- Global Rest Timer Overlay -->
-    <transition name="slide-up">
-      <RestTimerOverlay
-        v-if="isTimerRunning"
-        :remaining-seconds="remainingSeconds"
-        @stop-timer="stopTimer"
-      />
-    </transition>
   </IonApp>
 </template>
 
