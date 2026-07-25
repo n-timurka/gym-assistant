@@ -1,141 +1,117 @@
-import { ref, onUnmounted, computed } from "vue";
-import { toastController } from "@ionic/vue";
-import { Haptics, ImpactStyle } from "@capacitor/haptics";
-import { LocalNotifications } from "@capacitor/local-notifications";
-import { Capacitor } from "@capacitor/core";
+import { ref, computed, onMounted } from "vue";
+import { useSound } from "./useSound";
+import { useNotification } from "./useNotifications";
 
 // Store data
-const timerId = ref<ReturnType<typeof setInterval> | null>(null);
-const timeLeft = ref(0);
-const isActive = ref(false);
-const currentRestSeconds = ref(60);
-let notificationId = 0;
+const timerState = {
+  endTime: ref<number | null>(null),
+  intervalId: ref<ReturnType<typeof setInterval> | null>(null),
+  isRunning: ref(false),
+  remainingSeconds: ref(0),
+  duration: ref(0),
+};
 
 export function useRestTimer() {
-  const start = async (seconds: number = 60) => {
-    if (isActive.value) {
-      stop(); // Cancel previous timer
+  const { play: playAlarm, unlock: unlockAlarm } = useSound();
+  const { requestPermission, scheduleTimerEnd, cancelTimerNotification } =
+    useNotification();
+  const isRunning = computed(() => timerState.isRunning.value);
+
+  async function startTimer(seconds: number) {
+    stopTimer();
+
+    // Unlock sound on user gesture (timer start)
+    await unlockAlarm();
+
+    const permissionGranted = await requestPermission();
+    if (!permissionGranted) {
+      console.warn("Notifications not granted");
     }
 
-    currentRestSeconds.value = seconds;
-    timeLeft.value = seconds;
-    isActive.value = true;
+    timerState.duration.value = seconds;
+    const end = Date.now() + seconds * 1000;
+    timerState.endTime.value = end;
+    timerState.isRunning.value = true;
+    timerState.remainingSeconds.value = seconds;
 
-    // Schedule persistent notification
-    await scheduleRestNotification(seconds);
+    timerState.intervalId.value = setInterval(() => {
+      if (!timerState.endTime.value) return;
+      const now = Date.now();
+      const remaining = Math.max(
+        0,
+        Math.ceil((timerState.endTime.value - now) / 1000),
+      );
+      timerState.remainingSeconds.value = remaining;
 
-    timerId.value = setInterval(() => {
-      timeLeft.value -= 1;
-
-      if (timeLeft.value <= 0) {
-        finishTimer();
-      } else if (timeLeft.value % 15 === 0) {
-        // Optional: update notification every 15s
-        updateNotification();
+      if (remaining <= 0) {
+        stopTimer(true);
       }
     }, 1000);
-  };
 
-  const stop = async () => {
-    if (timerId.value) {
-      clearInterval(timerId.value);
-      timerId.value = null;
+    await scheduleTimerEnd(end);
+
+    // Persist
+    localStorage.setItem("globalTimerEnd", end.toString());
+    localStorage.setItem("globalTimerDuration", seconds.toString());
+  }
+
+  function stopTimer(completed = false) {
+    if (timerState.intervalId.value) {
+      clearInterval(timerState.intervalId.value);
+      timerState.intervalId.value = null;
+    }
+    timerState.isRunning.value = false;
+
+    cancelTimerNotification();
+
+    if (completed) {
+      playAlarm();
     }
 
-    await LocalNotifications.cancel({
-      notifications: [{ id: notificationId }],
-    });
-    isActive.value = false;
-    timeLeft.value = 0;
-  };
+    timerState.endTime.value = null;
+    timerState.remainingSeconds.value = 0;
+    localStorage.removeItem("globalTimerEnd");
+  }
 
-  const finishTimer = async () => {
-    stop();
-
-    // Haptics
-    Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {});
-
-    // Play system sound (best effort)
-    playSystemCompleteSound();
-
-    // Toast
-    const toast = await toastController.create({
-      message: "Rest finished! Let's go! 💪",
-      duration: 3000,
-      position: "top",
-      color: "success",
-    });
-    await toast.present();
-  };
-
-  const playSystemCompleteSound = async () => {
-    try {
-      if (Capacitor.isNativePlatform()) {
-        // Native system sound
-        const audio = new (window as any).Audio("/sounds/rest-complete.mp3");
-        audio.play().catch(() => {});
-      } else {
-        // Web fallback
-        const audio = new Audio("/sounds/rest-complete.mp3");
-        audio.play().catch(() => {});
+  function restoreState() {
+    const savedEnd = localStorage.getItem("globalTimerEnd");
+    if (savedEnd) {
+      const end = parseInt(savedEnd, 10);
+      if (end > Date.now()) {
+        const dur = parseInt(
+          localStorage.getItem("globalTimerDuration") || "0",
+          10,
+        );
+        timerState.endTime.value = end;
+        timerState.duration.value = dur;
+        timerState.isRunning.value = true;
+        timerState.intervalId = setInterval(() => {
+          /* same update logic */
+        }, 1000);
+        // Trigger one update
+        const now = Date.now();
+        timerState.remainingSeconds.value = Math.max(
+          0,
+          Math.ceil((end - now) / 1000),
+        );
       }
-    } catch (e) {
-      console.warn("Sound playback failed", e);
     }
-  };
+  }
 
-  const scheduleRestNotification = async (totalSeconds: number) => {
-    notificationId = Date.now();
-
-    try {
-      await LocalNotifications.requestPermissions();
-
-      await LocalNotifications.schedule({
-        notifications: [
-          {
-            id: notificationId,
-            title: "Rest Timer",
-            body: `Time left: ${Math.floor(totalSeconds / 60)}:${(totalSeconds % 60).toString().padStart(2, "0")}`,
-            schedule: { at: new Date(Date.now() + 1000) },
-            sound: "default", // Use system default sound
-            ongoing: true, // Keeps notification visible
-            autoCancel: false,
-          },
-        ],
-      });
-    } catch (e) {
-      console.warn("Notification scheduling failed (common in PWA)", e);
-    }
-  };
-
-  const updateNotification = async () => {
-    if (!isActive.value) return;
-    try {
-      await LocalNotifications.cancel({
-        notifications: [{ id: notificationId }],
-      });
-      await scheduleRestNotification(timeLeft.value);
-    } catch {
-      /* empty */
-    }
-  };
+  onMounted(restoreState);
 
   const formattedTime = computed(() => {
-    const min = Math.floor(timeLeft.value / 60);
-    const sec = timeLeft.value % 60;
+    const min = Math.floor(timerState.remainingSeconds.value / 60);
+    const sec = timerState.remainingSeconds.value % 60;
 
     return `${min.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
   });
 
-  onUnmounted(() => {
-    stop();
-  });
-
   return {
-    timeLeft,
-    isActive,
-    start,
-    stop,
+    startTimer,
+    stopTimer,
     formattedTime,
+    isRunning,
+    remainingSeconds: timerState.remainingSeconds,
   };
 }

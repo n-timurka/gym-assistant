@@ -3,17 +3,17 @@ import { useRestTimer } from '@/composables/useRestTimer';
 import { IonButton, IonIcon } from '@ionic/vue';
 import { closeOutline } from 'ionicons/icons';
 
-const { formattedTime, stop, isActive } = useRestTimer();
+const { formattedTime, stopTimer, isRunning } = useRestTimer();
 </script>
 
 <template>
   <Transition>
-    <section v-if="isActive" class="timer-overlay">
+    <section v-if="isRunning" class="timer-overlay">
       <div class="timer-content">
         <div class="timer-label">Rest Time</div>
         <div class="timer-value">{{ formattedTime }}</div>
       </div>
-      <IonButton fill="clear" color="light" @click="stop">
+      <IonButton fill="clear" color="light" @click="stopTimer">
         <IonIcon :icon="closeOutline" slot="icon-only" />
       </IonButton>
     </section>

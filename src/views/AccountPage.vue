@@ -48,7 +48,7 @@ const menuItems = computed(() => [
   },
 ]);
 
-const { start } = useRestTimer();
+const { startTimer } = useRestTimer();
 </script>
 
 <template>
@@ -73,7 +73,7 @@ const { start } = useRestTimer();
             <IonLabel>{{ item.label }}</IonLabel>
           </IonItem>
         </IonList>
-        <IonButton @click="start(5)">5 Sec Timer</IonButton>
+        <IonButton @click="startTimer(5)">5 Sec Timer</IonButton>
       </IonCardContent>
     </IonCard>
   </AppLayout>
