@@ -1,148 +1,5 @@
-<template>
-  <div class="workout-ongoing-view h-full flex flex-col">
-    <div v-if="currentExercise" class="exercise-focus-container flex flex-col h-full">
-      
-       <!-- Progress Bar -->
-       <div class="progress-section ion-padding-horizontal">
-          <div class="progress-label">
-             <span>Progress</span>
-             <span>{{ Math.round(workoutProgress * 100) }}%</span>
-          </div>
-          <ion-progress-bar :value="workoutProgress" color="success"></ion-progress-bar>
-       </div>
-
-      <!-- Navigation Header -->
-      <div class="navigation-header ion-padding-horizontal ion-padding-top">
-        <ion-button fill="clear" :disabled="currentExerciseIndex === 0" @click="prevExercise">
-          <ion-icon slot="icon-only" :icon="chevronBackOutline"></ion-icon>
-        </ion-button>
-        
-        <div class="exercise-title-container">
-          <h2 class="ion-text-center ion-no-margin">
-            {{ currentExercise.exercise?.name }}
-          </h2>
-          <ion-text color="medium" class="ion-text-center text-xs">
-          {{ currentExerciseIndex + 1 }} of {{ exercises.length }}
-          </ion-text>
-        </div>
-
-        <ion-button fill="clear" :disabled="currentExerciseIndex === exercises.length - 1" @click="nextExercise">
-          <ion-icon slot="icon-only" :icon="chevronForwardOutline"></ion-icon>
-        </ion-button>
-      </div>
-
-      <!-- Exercise Content -->
-      <div class="exercise-content ion-padding flex-grow overflow-y-auto">
-        <!-- Image & Description -->
-        <div class="media-container ion-margin-bottom">
-           <div  v-if="currentExercise.exercise" class="exercise-image-container relative">
-             <div class="exercise-badges-overlay">
-              <exercise-category-label :category="currentExercise.exercise?.category" size="sm" />
-              <exercise-type-label :type="currentExercise.exercise.type" />
-             </div>
-             <ExerciseImage :exercise-id="currentExercise.exercise?.extId" size="lg" />
-           </div>
-        </div>
-
-        <!-- Segments -->
-        <div class="exercise-details">
-            <ion-segment v-model="selectedTab" mode="ios">
-                <ion-segment-button value="sets">
-                    <ion-label>Sets</ion-label>
-                </ion-segment-button>
-                <ion-segment-button value="info">
-                    <ion-label>Info</ion-label>
-                </ion-segment-button>
-            </ion-segment>
-
-            <!-- Sets Tab -->
-            <div v-if="selectedTab === 'sets'">
-                <workout-exercise-card
-                  :key="currentExercise.exerciseId"
-                  :exercise="currentExercise"
-                  :exercise-name="getExerciseName(currentExercise.exerciseId)"
-                  :exercise-category="getExerciseCategory(currentExercise.exerciseId)"
-                  :is-workout-started="true"
-                  :show-header="false"
-                  :show-info="false"
-                  :show-delete="false"
-                  :show-reorder="false"
-                  @add-set="$emit('add-set', currentExerciseIndex)"
-                  @remove-set="(setIndex) => $emit('remove-set', currentExerciseIndex, setIndex)"
-                  @update-set="handleSetUpdate"
-                  @timer-requested="$emit('timer-requested')"
-                ></workout-exercise-card>
-            </div>
-
-            <!-- Info Tab (Combined) -->
-            <div v-if="selectedTab === 'info'" class="info-container">
-                 <!-- Description -->
-                <div class="detail-section">
-                    <p class="description ion-no-margin">
-                        {{ getExerciseDescription(currentExercise.exerciseId) }}
-                    </p>
-                </div>
-
-                <!-- Muscles -->
-                <div class="detail-section" v-if="getExercisePrimaryMuscles(currentExercise.exerciseId)?.length || getExerciseSecondaryMuscles(currentExercise.exerciseId)?.length">
-                    <h3 class="detail-title">Target Muscles</h3>
-                     <div class="muscles-list">
-                        <span v-for="muscle in getExercisePrimaryMuscles(currentExercise.exerciseId)" :key="'p-'+muscle" class="muscle-tag primary">
-                            {{ muscle }}
-                        </span>
-                        <span v-for="muscle in getExerciseSecondaryMuscles(currentExercise.exerciseId)" :key="'s-'+muscle" class="muscle-tag secondary">
-                            {{ muscle }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- How To -->
-                <div class="detail-section">
-                    <h3 class="detail-title">How To</h3>
-                    <ol v-if="getExerciseHowTo(currentExercise.exerciseId)?.length" class="instruction-list">
-                        <li v-for="(step, idx) in getExerciseHowTo(currentExercise.exerciseId)" :key="idx">
-                            {{ step }}
-                        </li>
-                    </ol>
-                     <div v-else class="ion-text-center text-muted text-sm italic">
-                        No instructions available
-                    </div>
-                </div>
-
-                <!-- Tips -->
-                <div class="detail-section">
-                    <h3 class="detail-title">Tips</h3>
-                     <ul v-if="getExerciseTips(currentExercise.exerciseId)?.length" class="tips-list">
-                        <li v-for="(tip, idx) in getExerciseTips(currentExercise.exerciseId)" :key="idx">
-                            {{ tip }}
-                        </li>
-                    </ul>
-                    <div v-else class="ion-text-center text-muted text-sm italic">
-                        No tips available
-                    </div>
-                </div>
-            </div>
-        </div>
-      </div>
-
-      <!-- Bottom Actions Menu -->
-      <div class="bottom-actions-menu">
-        <ion-button expand="block" fill="outline" @click="openExerciseActions">
-            <ion-icon slot="start" :icon="ellipsisHorizontalOutline"></ion-icon>
-            Exercise Options
-        </ion-button>
-      </div>
-
-    </div>
-
-    <div v-else class="empty-state ion-padding">
-      <p>No exercises in this workout.</p>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { computed, onMounted, ref, shallowRef } from 'vue';
 import {
   IonButton,
   IonIcon,
@@ -162,16 +19,15 @@ import {
   ellipsisHorizontalOutline,
 } from 'ionicons/icons';
 import WorkoutExerciseCard from '@/components/workout/WorkoutExerciseCard.vue';
-import { WorkoutExercise, Exercise } from '@/types/firebase.types';
-import ExerciseImage from '../ExerciseImage.vue';
-import ExerciseCategoryLabel from '../ExerciseCategoryLabel.vue';
-import ExerciseTypeLabel from '../ExerciseTypeLabel.vue';
+import { type WorkoutExercise } from '@/types/firebase.types';
+import ExerciseImage from '@/components/ExerciseImage.vue';
+import ExerciseCategoryLabel from '@/components/ExerciseCategoryLabel.vue';
+import ExerciseTypeLabel from '@/components/ExerciseTypeLabel.vue';
+import { SwiperClass } from 'swiper/react';
+import { Swiper, SwiperSlide } from 'swiper/vue';
 
-const props = defineProps<{
+ const { exercises } = defineProps<{
   exercises: WorkoutExercise[];
-  allExercises: Exercise[];
-  completedExercisesCount: number;
-  totalExercisesCount: number;
   workoutProgress: number;
 }>();
 
@@ -185,133 +41,212 @@ const emit = defineEmits<{
   (e: 'delete-exercise', index: number): void;
 }>();
 
+const swiperInstance = shallowRef<SwiperClass|null>(null);
 const currentExerciseIndex = ref(0);
+const currentExercise = computed(() => exercises[currentExerciseIndex.value]);
 const selectedTab = ref('sets');
 
-// Watch for changes in exercises list to keep index valid
-watch(() => props.exercises.length, (newLength) => {
-    if (currentExerciseIndex.value >= newLength) {
-        currentExerciseIndex.value = Math.max(0, newLength - 1);
-    }
+onMounted(() => {
+  currentExerciseIndex.value = Number(localStorage.getItem('CurrentExerciseIndex')) || 0;
 });
 
-const currentExercise = computed(() => {
-  if (!props.exercises || props.exercises.length === 0) return null;
-  // Safety check in case index is briefly out of bounds
-  const exercise = currentExerciseIndex.value >= props.exercises.length
-    ? props.exercises[props.exercises.length - 1]
-    : props.exercises[currentExerciseIndex.value];
-
-  return {
-    ...exercise,
-    exercise: props.allExercises.find(e => String(e.id) === String(exercise.exerciseId)),
-  };
-});
-
-const getExerciseName = (id: string) => {
-  const ex = props.allExercises.find(e => String(e.id) === String(id));
-  return ex ? ex.name : 'Unknown Exercise';
+const onSlideChange = (swiper: SwiperClass) => {
+  currentExerciseIndex.value = swiper.activeIndex;
+  localStorage.setItem('CurrentExerciseIndex', String(currentExerciseIndex.value));
 };
-
-const getExerciseCategory = (id: string) => {
-  const ex = props.allExercises.find(e => String(e.id) === String(id));
-  return ex ? ex.category : undefined;
+const onSwiperInit = (swiper: SwiperClass) => {
+  swiperInstance.value = swiper;
+  swiperInstance.value.activeIndex = Number(localStorage.getItem('CurrentExerciseIndex')) || 0;
 };
-
-const getExerciseDescription = (id: string) => {
-    const ex = props.allExercises.find(e => String(e.id) === String(id));
-    return ex?.description || '';
-}
-
-const getExerciseHowTo = (id: string) => {
-    const ex = props.allExercises.find(e => String(e.id) === String(id));
-    return ex?.howTo;
+const goNext = () => {
+  swiperInstance.value?.slideNext();
 };
-
-const getExercisePrimaryMuscles = (id: string) => {
-    const ex = props.allExercises.find(e => String(e.id) === String(id));
-    return ex?.primaryMuscles;
-};
-
-const getExerciseSecondaryMuscles = (id: string) => {
-    const ex = props.allExercises.find(e => String(e.id) === String(id));
-    return ex?.secondaryMuscles;
-};
-
-const getExerciseTips = (id: string) => {
-    const ex = props.allExercises.find(e => String(e.id) === String(id));
-    return ex?.tips;
+const goPrev = () => {
+  swiperInstance.value?.slidePrev();
 };
 
 const openExerciseActions = async () => {
-    const actionSheet = await actionSheetController.create({
-        header: 'Exercise Options',
-        buttons: [
-            {
-                text: 'Add Exercise',
-                icon: addCircleOutline,
-                handler: () => {
-                    emit('open-add-modal');
-                }
-            },
-            {
-                text: 'Swap Exercise',
-                icon: swapHorizontalOutline,
-                handler: () => {
-                   emit('swap-exercise', currentExerciseIndex.value);
-                }
-            },
-            {
-                text: 'Delete Exercise',
-                icon: trashOutline,
-                role: 'destructive',
-                handler: () => {
-                    emit('delete-exercise', currentExerciseIndex.value);
-                }
-            },
-            {
-                text: 'Cancel',
-                role: 'cancel'
-            }
-        ]
-    });
-    await actionSheet.present();
-};
+  const actionSheet = await actionSheetController.create({
+    header: 'Exercise Options',
+    buttons: [
+      {
+        text: 'Add Exercise',
+        icon: addCircleOutline,
+        handler: () => {
+            emit('open-add-modal');
+        }
+      },
+      {
+        text: 'Swap Exercise',
+        icon: swapHorizontalOutline,
+        handler: () => {
+            emit('swap-exercise', currentExerciseIndex.value);
+        }
+      },
+      {
+        text: 'Delete Exercise',
+        icon: trashOutline,
+        role: 'destructive',
+        handler: () => {
+            emit('delete-exercise', currentExerciseIndex.value);
+        }
+      },
+      {
+        text: 'Cancel',
+        role: 'cancel'
+      }
+    ],
+  });
 
-
-const prevExercise = () => {
-  if (currentExerciseIndex.value > 0) {
-    currentExerciseIndex.value--;
-  }
-};
-
-const nextExercise = () => {
-  if (currentExerciseIndex.value < props.exercises.length - 1) {
-    currentExerciseIndex.value++;
-  }
+  await actionSheet.present();
 };
 
 const handleSetUpdate = () => {
   emit('update-set');
-  checkAllSetsCompleted();
 };
-
-const checkAllSetsCompleted = () => {
-  if (currentExercise.value) {
-    const allCompleted = currentExercise.value.sets.every(s => s.isCompleted);
-    if (allCompleted && currentExerciseIndex.value < props.exercises.length - 1) {
-      // Auto-advance with a slight delay for better UX
-      setTimeout(() => {
-        // Double check in case user unchecked quickly
-        if (currentExercise.value?.sets.every(s => s.isCompleted)) {
-            nextExercise();
-        }
-      }, 500);
-    }
-  }
-};
-
 </script>
+
+<template>
+  <div class="workout-ongoing-view h-full flex flex-col">
+    <div class="exercise-focus-container flex flex-col h-full">
+      <!-- Progress Bar -->
+      <div class="progress-section ion-padding-horizontal">
+        <div class="progress-label">
+          <span>Progress</span>
+          <span>{{ Math.round(workoutProgress * 100) }}%</span>
+        </div>
+        <IonProgressBar :value="workoutProgress" color="success" />
+      </div>
+
+      <!-- Exercises navigation -->
+      <div class="navigation-header ion-padding-horizontal ion-padding-top">
+        <IonButton fill="clear" @click="goPrev">
+          <IonIcon slot="icon-only" :icon="chevronBackOutline" />
+        </IonButton>
+
+        <div class="exercise-title-container">
+          <h2 class="ion-text-center ion-no-margin">
+            {{ currentExercise.exercise?.name }}
+          </h2>
+          <IonText color="medium" class="ion-text-center text-xs">
+            {{ currentExerciseIndex + 1 }} of {{ exercises.length }}
+          </IonText>
+        </div>
+
+        <IonButton fill="clear" @click="goNext">
+          <IonIcon slot="icon-only" :icon="chevronForwardOutline" />
+        </IonButton>
+      </div>
+
+      <!-- Exercise Content -->
+      <Swiper @slideChange="onSlideChange" @swiper="onSwiperInit">
+        <SwiperSlide
+          v-for="exercise in exercises"
+          :key="exercise.exerciseId"
+          class="exercise-content ion-padding flex-grow overflow-y-auto">
+          <!-- Image & Description -->
+          <div class="media-container">
+            <div v-if="exercise.exercise" class="exercise-image-container relative">
+              <div class="exercise-badges-overlay">
+                <ExerciseCategoryLabel :category="exercise.exercise?.category" size="sm" />
+                <ExerciseTypeLabel :type="exercise.exercise.type" />
+              </div>
+              <ExerciseImage :exercise-id="exercise.exercise?.extId" size="lg" />
+            </div>
+
+            <!-- Segments -->
+            <div class="exercise-details">
+              <IonSegment v-model="selectedTab">
+                <IonSegmentButton value="sets">
+                  <IonLabel>Sets</IonLabel>
+                </IonSegmentButton>
+                <IonSegmentButton value="info">
+                  <IonLabel>Info</IonLabel>
+                </IonSegmentButton>
+              </IonSegment>
+
+              <!-- Sets Tab -->
+              <div v-if="selectedTab === 'sets'">
+                <WorkoutExerciseCard
+                  :key="exercise.exerciseId"
+                  :exercise="exercise"
+                  :is-workout-started="true"
+                  :show-header="false"
+                  :show-info="false"
+                  :show-delete="false"
+                  :show-reorder="false"
+                  @add-set="$emit('add-set', currentExerciseIndex)"
+                  @remove-set="(setIndex) => $emit('remove-set', currentExerciseIndex, setIndex)"
+                  @update-set="handleSetUpdate"
+                  @timer-requested="$emit('timer-requested')"
+                />
+              </div>
+
+              <!-- Info Tab (Combined) -->
+              <div v-if="selectedTab === 'info'" class="info-container">
+                <!-- Description -->
+                <div class="detail-section">
+                  <p class="description ion-no-margin">
+                    {{ exercise.exercise?.description }}
+                  </p>
+                </div>
+
+                <!-- Muscles -->
+                <div
+                  class="detail-section"
+                  v-if="exercise.exercise?.primaryMuscles?.length || exercise.exercise?.secondaryMuscles?.length">
+                  <h3 class="detail-title">Target Muscles</h3>
+                  <div class="muscles-list">
+                    <span v-for="muscle in exercise.exercise?.primaryMuscles" :key="'p-'+muscle" class="muscle-tag primary">
+                      {{ muscle }}
+                    </span>
+                    <span v-for="muscle in exercise.exercise?.secondaryMuscles" :key="'s-'+muscle" class="muscle-tag secondary">
+                      {{ muscle }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- How To -->
+                <div class="detail-section">
+                  <h3 class="detail-title">How To</h3>
+                  <ol v-if="exercise.exercise?.howTo?.length" class="instruction-list">
+                    <li v-for="(step, idx) in exercise.exercise?.howTo" :key="idx">
+                        {{ step }}
+                    </li>
+                  </ol>
+                  <div v-else class="ion-text-center text-muted text-sm italic">
+                    No instructions available
+                  </div>
+                </div>
+
+                <!-- Tips -->
+                <div class="detail-section">
+                  <h3 class="detail-title">Tips</h3>
+                  <ul v-if="exercise.exercise?.tips?.length" class="tips-list">
+                    <li v-for="(tip, idx) in exercise.exercise?.tips" :key="idx">
+                      {{ tip }}
+                    </li>
+                  </ul>
+                  <div v-else class="ion-text-center text-muted text-sm italic">
+                    No tips available
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </SwiperSlide>
+      </Swiper>
+
+      <!-- Bottom Actions Menu -->
+      <div class="bottom-actions-menu">
+        <IonButton expand="block" fill="outline" @click="openExerciseActions">
+            <IonIcon slot="start" :icon="ellipsisHorizontalOutline" />
+            Exercise Options
+        </IonButton>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .navigation-header {

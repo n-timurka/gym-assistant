@@ -77,7 +77,7 @@ const swappingExerciseIndex = ref<number | null>(null);
 
 // Timer State
 // const { startTimer, isTimerRunning } = useTimer();
-const { start, isActive: isTimerRunning } = useRestTimer();
+const { startTimer, isRunning: isTimerRunning } = useRestTimer();
 const restTimeSeconds = ref(120); // Default 2 minutes
 let currentActionSheet: HTMLIonActionSheetElement | null = null;
 const unsubscribeFunctions: Array<() => void> = [];
@@ -87,7 +87,7 @@ const unsubscribeFunctions: Array<() => void> = [];
 
 const startRestTimer = async () => {
     // startTimer(restTimeSeconds.value);
-    start(restTimeSeconds.value);
+    startTimer(restTimeSeconds.value);
     
     // Close selection sheet if open
     if (currentActionSheet) {
@@ -168,12 +168,6 @@ const workoutExercises = computed(() => {
     ...exercise,
     exercise: exercises.value.find(e => e.id === exercise.exerciseId)
   }));
-});
-
-const completedExercisesCount = computed(() => {
-  return workoutExercises.value.filter(ex => 
-    ex.sets.every(s => s.isCompleted) && ex.sets.length > 0
-  ).length;
 });
 
 const workoutProgress = computed(() => {
@@ -674,9 +668,6 @@ onMounted(() => {
         <WorkoutOngoingView
           v-else-if="workoutStatus === WorkoutStatus.ONGOING"
           :exercises="workoutExercises"
-          :all-exercises="exercises"
-          :completed-exercises-count="completedExercisesCount"
-          :total-exercises-count="workoutExercises.length"
           :workout-progress="workoutProgress"
           @add-set="addSet"
           @remove-set="removeSet"

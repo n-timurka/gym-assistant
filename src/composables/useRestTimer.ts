@@ -85,7 +85,7 @@ export function useRestTimer() {
         timerState.endTime.value = end;
         timerState.duration.value = dur;
         timerState.isRunning.value = true;
-        timerState.intervalId = setInterval(() => {
+        timerState.intervalId.value = setInterval(() => {
           /* same update logic */
         }, 1000);
         // Trigger one update

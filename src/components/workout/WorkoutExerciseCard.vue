@@ -4,7 +4,7 @@
       <div class="exercise-header">
         <ion-reorder v-if="showReorder"></ion-reorder>
         <ion-card-title class="exercise-title">
-          {{ exerciseName }}
+          {{ exercise.exercise?.name }}
         </ion-card-title>
         <div class="header-actions">
           <!-- Delete removed from here -->
@@ -20,7 +20,7 @@
           <ExerciseImage :exerciseId="exercise.exercise?.extId" size="xs" />
         </div>
         <div class="info-description">
-            <p v-if="exerciseDescription">{{ exerciseDescription }}</p>
+            <p v-if="exercise.exercise?.description">{{ exercise.exercise.description }}</p>
             <p v-else class="text-muted italic">No description available</p>
         </div>
       </div>
@@ -97,11 +97,7 @@ import ExerciseImage from '../ExerciseImage.vue';
 
 const props = withDefaults(defineProps<{
   exercise: WorkoutExercise;
-  exerciseName: string;
-  exerciseImage?: string;
-  exerciseDescription?: string;
   isWorkoutStarted: boolean;
-  exerciseCategory?: ExerciseCategory;
   showHeader?: boolean;
   showInfo?: boolean;
   showDelete?: boolean;
@@ -131,7 +127,7 @@ const toggleCollapse = () => {
   }
 };
 
-const isCardio = computed(() => props.exerciseCategory === ExerciseCategory.CARDIO);
+const isCardio = computed(() => props.exercise.exercise?.category === ExerciseCategory.CARDIO);
 
 const handleCompletion = (set: ExerciseSet) => {
   emit('update-set');
