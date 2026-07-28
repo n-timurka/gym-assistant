@@ -2,21 +2,22 @@
 import { useAuth } from '@/composables/useAuth';
 import { useFirebase } from '@/composables/useFirebase';
 import { calculateDuration, formatDate } from '@/helpers/date.helper';
-import { Collections, Exercise, Workout, WorkoutStatus } from '@/types/firebase.types';
+import { Collections, Workout, WorkoutStatus } from '@/types/firebase.types';
 import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonIcon, IonItem, IonList, IonSpinner } from '@ionic/vue';
 import { addOutline, trashOutline } from 'ionicons/icons';
 import WorkoutStatusLabel from '@/components/WorkoutStatusLabel.vue';
 import { computed } from 'vue';
 import ExerciseCategoryLabel from '@/components/ExerciseCategoryLabel.vue';
+import { useExerciseStore } from '@/stores/exerciseStore';
 
-const { date, workout, exercises } = defineProps<{
+const { date, workout } = defineProps<{
   date: Date,
   workout?: Workout,
-  exercises: Exercise[],
 }>();
 
 const { currentUser } = useAuth();
 const { loading, create, remove } = useFirebase<Workout>(Collections.WORKOUTS);
+const { exercises } = useExerciseStore();
 
 const workoutDuration = computed(() => {
   if (!workout) return
@@ -30,7 +31,7 @@ const workoutExercises = computed(() => {
   if (!workout) return;
 
   return workout.exercises
-    .map(e => exercises.find(ex => ex.id === e.exerciseId))
+    .map(e => exercises.value.find(ex => ex.id === e.exerciseId))
     .filter(e => e !== undefined);
 });
 
@@ -120,7 +121,7 @@ const deleteWorkout = async () => {
             fill="clear" 
             @click="deleteWorkout"
           >
-            <ion-icon slot="start" :icon="trashOutline"></ion-icon>
+            <IonIcon slot="start" :icon="trashOutline" />
             Delete Workout
           </IonButton>
         </IonCardContent>

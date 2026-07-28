@@ -23,7 +23,7 @@ import { type WorkoutExercise } from '@/types/firebase.types';
 import ExerciseImage from '@/components/ExerciseImage.vue';
 import ExerciseCategoryLabel from '@/components/ExerciseCategoryLabel.vue';
 import ExerciseTypeLabel from '@/components/ExerciseTypeLabel.vue';
-import { SwiperClass } from 'swiper/react';
+import SwiperClass from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 
  const { exercises } = defineProps<{
