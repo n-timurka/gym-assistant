@@ -1,40 +1,20 @@
 <template>
   <ion-card class="exercise-card">
-    <ion-card-header v-if="showHeader" class="card-header" :class="{ 'clickable': isCollapsible }" @click="toggleCollapse">
-      <div class="exercise-header">
-        <ion-reorder v-if="showReorder"></ion-reorder>
-        <ion-card-title class="exercise-title">
-          {{ exercise.exercise?.name }}
-        </ion-card-title>
-        <div class="header-actions">
-          <!-- Delete removed from here -->
-          <ion-icon v-if="isCollapsible" :icon="isCollapsed ? chevronDownOutline : chevronUpOutline" class="collapse-icon"></ion-icon>
-        </div>
-      </div>
-    </ion-card-header>
-    
-    <ion-card-content v-show="!isCollapsed">
-      <!-- Info Block -->
-      <div v-if="showInfo" class="info-block ion-margin-bottom">
-        <div class="info-image-container">
-          <ExerciseImage :exerciseId="exercise.exercise?.extId" size="xs" />
-        </div>
-        <div class="info-description">
-            <p v-if="exercise.exercise?.description">{{ exercise.exercise.description }}</p>
-            <p v-else class="text-muted italic">No description available</p>
-        </div>
-      </div>
-
+    <ion-card-content>
       <!-- Sets Header -->
       <div class="sets-header" :class="{ 'cardio-header': isCardio }">
         <span>Set</span>
         <span>{{ isCardio ? 'Time (min)' : 'kg' }}</span>
         <span v-if="!isCardio">Reps</span>
-        <span v-if="isWorkoutStarted">Done</span>
+        <span>Done</span>
       </div>
 
       <!-- Sets List -->
-      <div v-for="(set, setIndex) in exercise.sets" :key="setIndex" class="set-row" :class="{ 'cardio-row': isCardio }">
+      <div
+        v-for="(set, setIndex) in exercise.sets"
+        :key="setIndex"
+        class="set-row"
+        :class="{ 'cardio-row': isCardio }">
         <div class="set-number">{{ setIndex + 1 }}</div>
         <ion-input 
           type="number" 
@@ -42,7 +22,7 @@
           :placeholder="isCardio ? '0' : '0'"
           class="set-input"
           @ionChange="$emit('update-set')"
-        ></ion-input>
+        />
         <ion-input 
           v-if="!isCardio"
           type="number" 
@@ -50,12 +30,11 @@
           placeholder="0"
           class="set-input"
           @ionChange="$emit('update-set')"
-        ></ion-input>
+        />
         <ion-checkbox 
-          v-if="isWorkoutStarted"
           v-model="set.isCompleted"
           @ionChange="handleCompletion(set)"
-        ></ion-checkbox>
+        />
         <ion-button v-if="!isCardio" fill="clear" color="danger" size="small" @click="$emit('remove-set', setIndex)">
           <ion-icon slot="icon-only" :icon="closeOutline"></ion-icon>
         </ion-button>
@@ -65,72 +44,38 @@
       <ion-button v-if="!isCardio" expand="block" fill="clear" size="small" @click="$emit('add-set')">
         + Add Set
       </ion-button>
-
-      <!-- Delete Exercise Button (Bottom) -->
-      <div v-if="showDelete" class="delete-section ion-margin-top">
-        <ion-button expand="block" fill="outline" color="danger" @click.stop="$emit('delete-exercise')">
-            <ion-icon slot="start" :icon="trashOutline"></ion-icon>
-            Delete Exercise
-        </ion-button>
-      </div>
     </ion-card-content>
   </ion-card>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { computed } from 'vue';
 import {
   IonCard,
-  IonCardHeader,
-  IonCardTitle,
   IonCardContent,
-  IonReorder,
   IonButton,
   IonIcon,
   IonInput,
   IonCheckbox
 } from '@ionic/vue';
-import { trashOutline, closeOutline, chevronDownOutline, chevronUpOutline } from 'ionicons/icons';
+import { closeOutline } from 'ionicons/icons';
 import { WorkoutExercise, ExerciseSet, ExerciseCategory } from '@/types/firebase.types';
-import ExerciseImage from '../ExerciseImage.vue';
 
-const props = withDefaults(defineProps<{
+const { exercise } = defineProps<{
   exercise: WorkoutExercise;
-  isWorkoutStarted: boolean;
-  showHeader?: boolean;
-  showInfo?: boolean;
-  showDelete?: boolean;
-  showReorder?: boolean;
-  isCollapsible?: boolean;
-}>(), {
-  showHeader: true,
-  showDelete: true,
-  showReorder: true,
-  showInfo: true,
-  isCollapsible: false
-});
+}>();
 
 const emit = defineEmits<{
-  (e: 'delete-exercise'): void;
   (e: 'add-set'): void;
   (e: 'remove-set', index: number): void;
-  (e: 'update-set'): void;
+  (e: 'update-set', set: ExerciseSet): void;
   (e: 'timer-requested'): void;
 }>();
 
-const isCollapsed = ref(props.isCollapsible);
-
-const toggleCollapse = () => {
-  if (props.isCollapsible) {
-    isCollapsed.value = !isCollapsed.value;
-  }
-};
-
-const isCardio = computed(() => props.exercise.exercise?.category === ExerciseCategory.CARDIO);
+const isCardio = computed(() => exercise.exercise?.category === ExerciseCategory.CARDIO);
 
 const handleCompletion = (set: ExerciseSet) => {
-  emit('update-set');
+  emit('update-set', set);
   if (set.isCompleted) {
     emit('timer-requested');
   }

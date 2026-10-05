@@ -19,7 +19,7 @@ import {
   ellipsisHorizontalOutline,
 } from 'ionicons/icons';
 import WorkoutExerciseCard from '@/components/workout/WorkoutExerciseCard.vue';
-import { type WorkoutExercise } from '@/types/firebase.types';
+import { ExerciseSet, type WorkoutExercise } from '@/types/firebase.types';
 import ExerciseImage from '@/components/ExerciseImage.vue';
 import ExerciseCategoryLabel from '@/components/ExerciseCategoryLabel.vue';
 import ExerciseTypeLabel from '@/components/ExerciseTypeLabel.vue';
@@ -101,7 +101,10 @@ const openExerciseActions = async () => {
   await actionSheet.present();
 };
 
-const handleSetUpdate = () => {
+const handleSetUpdate = (set: ExerciseSet) => {
+  if (set.isCompleted) {
+    goNext();
+  }
   emit('update-set');
 };
 </script>
@@ -168,13 +171,7 @@ const handleSetUpdate = () => {
               <!-- Sets Tab -->
               <div v-if="selectedTab === 'sets'">
                 <WorkoutExerciseCard
-                  :key="exercise.exerciseId"
                   :exercise="exercise"
-                  :is-workout-started="true"
-                  :show-header="false"
-                  :show-info="false"
-                  :show-delete="false"
-                  :show-reorder="false"
                   @add-set="$emit('add-set', currentExerciseIndex)"
                   @remove-set="(setIndex) => $emit('remove-set', currentExerciseIndex, setIndex)"
                   @update-set="handleSetUpdate"
