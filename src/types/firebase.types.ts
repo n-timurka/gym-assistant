@@ -104,6 +104,23 @@ export interface UserProfile extends FirestoreDocument {
   preferences?: Record<string, any>;
 }
 
+export interface WeightHistoryEntry {
+  date: string;
+  weight: number;
+}
+
+/** Personal details stored in the `users` collection, keyed by Firebase Auth UID. */
+export interface PersonalData extends FirestoreDocument {
+  userId: string;
+  Name: string;
+  birthDate: string;
+  height: number;
+  weight: number;
+  bmi: number;
+  bodyComposition: string;
+  weightHistory: WeightHistoryEntry[];
+}
+
 // Progress tracking
 export interface Progress extends FirestoreDocument {
   userId: string;

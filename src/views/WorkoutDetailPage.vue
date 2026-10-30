@@ -20,7 +20,6 @@ import { useAuth } from '@/composables/useAuth';
 import {
   Collections,
   type Workout,
-  type WeekPlan,
   type WorkoutExercise,
   type Exercise,
   type ExerciseSet,
@@ -48,26 +47,21 @@ const {
   update: updateWorkout,
 } = useFirebase<Workout>(Collections.WORKOUTS);
 
-const { 
-  documents: weekPlans,
-  subscribe: subscribeWeekPlans,
-  update: updateWeekPlan
-} = useFirebase<WeekPlan>(Collections.WEEK_PLANS);
-
 const {
   documents: exercises,
   subscribe: subscribeExercises
 } = useFirebase<Exercise>(Collections.EXERCISES);
 
 const {
-  documents: weekWorkouts,
-  subscribe: subscribeWeekWorkouts
-} = useFirebase<Workout>(Collections.WORKOUTS);
-
-const {
   create: createProgress,
   getAll: getProgressRecords
 } = useFirebase<Progress>(Collections.PROGRESS);
+
+const unsubscribeFunctions: Array<() => void> = [];
+onUnmounted(() => {
+  unsubscribeFunctions.forEach(unsub => unsub());
+  unsubscribeFunctions.length = 0;
+});
 
 // State
 const workout = ref<Workout | null>(null);
@@ -75,17 +69,12 @@ const loading = ref(true);
 const showAddModal = ref(false);
 
 // Timer State
-// const { startTimer, isTimerRunning } = useTimer();
 const { startTimer, isRunning: isTimerRunning } = useRestTimer();
 const restTimeSeconds = ref(120); // Default 2 minutes
 let currentActionSheet: HTMLIonActionSheetElement | null = null;
-const unsubscribeFunctions: Array<() => void> = [];
 
-// --- Timer Logic ---
-// Global timer handles updates and completion
-
+// Timer Logic
 const startRestTimer = async () => {
-    // startTimer(restTimeSeconds.value);
     startTimer(restTimeSeconds.value);
     
     // Close selection sheet if open
@@ -94,12 +83,6 @@ const startRestTimer = async () => {
         currentActionSheet = null;
     }
 };
-
-onUnmounted(() => {
-  unsubscribeFunctions.forEach(unsub => unsub());
-  unsubscribeFunctions.length = 0;
-});
-
 const showRestTimerSheet = async () => {
   // If timer is already running, show the running sheet
   if (isTimerRunning.value) {
@@ -111,11 +94,8 @@ const showRestTimerSheet = async () => {
     buttons: [
       {
         text: 'START TIMER (2 min)',
-        role: 'selected', // Custom role
-        handler: () => {
-          restTimeSeconds.value = 120;
-          startRestTimer();
-        }
+        role: 'selected',
+        handler: () => { restTimeSeconds.value = 120; startRestTimer(); }
       },
       {
         text: '30 Seconds',
@@ -148,8 +128,10 @@ const showRestTimerSheet = async () => {
   await actionSheet.present();
 };
 
+// Workout data
 const workoutDateDisplay = computed(() => {
   if (!workout.value?.date) return 'Workout';
+
   const date = new Date(workout.value.date); // Handle timestamp or string
   return date.toLocaleDateString('en-US', { 
     weekday: 'long', 
@@ -157,9 +139,7 @@ const workoutDateDisplay = computed(() => {
     day: 'numeric' 
   });
 });
-
 const workoutStatus = computed(() => workout.value?.status || WorkoutStatus.PLANNED);
-
 const workoutExercises = computed(() => {
   if (!workout.value) return [];
 
@@ -168,7 +148,6 @@ const workoutExercises = computed(() => {
     exercise: exercises.value.find(e => e.id === exercise.exerciseId)
   }));
 });
-
 const workoutProgress = computed(() => {
   if (workoutExercises.value.length === 0) return 0;
   // Calculate based on completed sets vs total sets for finer granularity
@@ -185,97 +164,24 @@ const workoutProgress = computed(() => {
   return totalSets > 0 ? completedSets / totalSets : 0;
 });
 
-// --- Week Plan Logic ---
-const currentWeekPlan = computed(() => {
-  if (!workout.value?.date) return null;
-  const workoutDate = new Date(workout.value.date);
-  
-  // Find the plan that covers this workout's week
-  return weekPlans.value.find(p => {
-    const planStart = new Date(p.weekStart);
-    const planEnd = new Date(planStart);
-    planEnd.setDate(planEnd.getDate() + 6);
-    return workoutDate >= planStart && workoutDate <= planEnd;
-  });
-});
-
-const plannedExercises = computed(() => {
-  if (!currentWeekPlan.value) return [];
-  return currentWeekPlan.value.exercises.map(id => {
-    return exercises.value.find(e => String(e.id) === String(id));
-  }).filter(e => !!e);
-});
-
-const completedExercisesThisWeek = computed(() => {
-  const completedIds = new Set<string>();
-  weekWorkouts.value.forEach(w => {
-    w.exercises.forEach(ex => {
-        // Consider an exercise completed if it has at least one completed set? 
-        // Or just if it exists in the workout?
-        // User said "Disable those who are already completed this week".
-        // Let's assume if it's in the workout and the workout is ONGOING or COMPLETED?
-        // Or maybe just if it is in the workout?
-        // Let's be strict: If it's in a workout that is NOT the current one (or even if it is?), 
-        // and that workout is at least planned? 
-        // "Completed this week" implies the user did it.
-        // But usually Week Plan is "what to do". If I did it on Monday, I shouldn't do it on Wednesday.
-        // So checking presence in any workout of this week is safest.
-        completedIds.add(String(ex.exerciseId));
-    });
-  });
-  return completedIds;
-});
-
-// --- Actions ---
-
+// Actions
 const loadWorkout = async () => {
   loading.value = true;
   try {
-    const doc = await getWorkoutById(workoutId);
-    if (doc) {
-      workout.value = doc;
-      if (doc.date && currentUser.value) {
-        const d = new Date(doc.date);
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-        const weekStart = new Date(d);
-        weekStart.setDate(diff);
-        weekStart.setHours(0,0,0,0);
-        
-        const unsubPlans = subscribeWeekPlans({
-          where: [
-            {
-                field: 'weekStart',
-                operator: '==',
-                value: weekStart.toISOString()
-            },
-            {
-                field: 'userId',
-                operator: '==',
-                value: currentUser.value.uid
-            }
-          ]
-        });
-        if (unsubPlans) unsubscribeFunctions.push(unsubPlans);
+    workout.value = await getWorkoutById(workoutId);
+    if (!workout.value) return
 
-        // Calculate week end for workout query
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekEnd.getDate() + 7); // end of Sunday (actually start of next Monday, allowing < comparison)
-        
-        const unsubWorkouts = subscribeWeekWorkouts({
-            where: [
-                { field: 'userId', operator: '==', value: currentUser.value.uid },
-                { field: 'date', operator: '>=', value: weekStart.toISOString() }, 
-                // Note: Compound queries might need an index. If date is string, standard lexicographical sort works for ISO.
-                // However, we can't do multiple inequalities on different fields easily without index.
-                // Let's filter client side if needed or hope 'date' and 'userId' works.
-                // But wait, 'userId' is equality, 'date' is inequality. That IS allowed.
-                // We need date <= weekEnd. using '<' next monday.
-                { field: 'date', operator: '<', value: weekEnd.toISOString() }
-            ]
-        });
-        if (unsubWorkouts) unsubscribeFunctions.push(unsubWorkouts);
-      }
+    if (workout.value.date && currentUser.value) {
+      const d = new Date(workout.value.date);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      const weekStart = new Date(d);
+      weekStart.setDate(diff);
+      weekStart.setHours(0,0,0,0);
+
+      // Calculate week end for workout query
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 7);
     }
   } catch (e) {
     console.error('Error loading workout', e);
@@ -299,6 +205,7 @@ const startTraining = async () => {
 
 const hasCompletedSets = (): boolean => {
   if (!workout.value) return false;
+
   return workout.value.exercises.some(ex => 
     ex.sets.some(set => set.isCompleted)
   );
@@ -326,7 +233,6 @@ const getMostCommonWeight = (sets: ExerciseSet[]): number => {
   return mostCommonWeight;
 };
 
-// Helper to get exercise category for logic
 const getExerciseCategory = (id: string) => {
   const ex = exercises.value.find(e => String(e.id) === String(id));
   return ex ? ex.category : undefined;
@@ -396,24 +302,6 @@ const getLatestProgressWeight = async (exerciseId: string): Promise<number> => {
   return 0;
 };
 
-const updateWeekPlanWithCompletedExercises = async () => {
-  if (!currentWeekPlan.value || !workout.value) return;
-  
-  // Find exercises that have at least one completed set
-  const completedInWorkout = workout.value.exercises
-    .filter(ex => ex.sets.some(s => s.isCompleted))
-    .map(ex => ex.exerciseId);
-      
-  if (completedInWorkout.length === 0) return;
-  
-  const existingCompleted = new Set(currentWeekPlan.value.completed || []);
-  completedInWorkout.forEach(id => existingCompleted.add(id));
-  
-  await updateWeekPlan(currentWeekPlan.value.id, {
-    completed: Array.from(existingCompleted)
-  });
-};
-
 const endTraining = async () => {
   if (!workout.value) return;
   
@@ -438,13 +326,12 @@ const endTraining = async () => {
           workout.value!.endTime = endTime;
           
           await saveProgressRecords();
-          
-          await updateWeekPlanWithCompletedExercises();
 
           await updateWorkout(workoutId, { 
             status: WorkoutStatus.COMPLETED,
             endTime
           });
+          localStorage.setItem('CurrentExerciseIndex', '0');
         }
       }
     ]
@@ -605,6 +492,7 @@ const clearWorkout = async () => {
 
 const isExerciseInWorkout = (exerciseId: string | number): boolean => {
   if (!workout.value) return false;
+
   return workout.value.exercises.some(ex => String(ex.exerciseId) === String(exerciseId));
 };
 
@@ -671,10 +559,8 @@ onMounted(() => {
 
       <add-exercise-modal
         :is-open="showAddModal"
-        :planned-exercises="swappingExerciseIndex === null ? plannedExercises : []"
         :all-exercises="exercises"
         :is-exercise-in-workout="swappingExerciseIndex === null ? isExerciseInWorkout : () => false"
-        :completed-exercise-ids="completedExercisesThisWeek"
         :current-exercise-id="swappingExerciseIndex !== null && workout?.exercises[swappingExerciseIndex] ? workout.exercises[swappingExerciseIndex].exerciseId : null"
         @close="closeAddModal"
         @add-exercise="addExerciseToWorkout"

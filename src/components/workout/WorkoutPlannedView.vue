@@ -9,7 +9,6 @@ import {
   IonLabel,
   IonReorder,
 } from '@ionic/vue';
-import WorkoutExerciseCard from '@/components/workout/WorkoutExerciseCard.vue';
 import { WorkoutExercise, Exercise } from '@/types/firebase.types';
 import AddWorkoutModal from './AddWorkoutModal.vue';
 import WorkoutExerciseCard from '@/components/workout/WorkoutExerciseCard.vue';

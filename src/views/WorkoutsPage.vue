@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import { useFirebase } from '@/composables/useFirebase';
-import {
-  Collections,
-  type Workout,
-  type Exercise,
-} from '@/types/firebase.types';
+import { Collections, type Workout } from '@/types/firebase.types';
 import { useAuth } from '@/composables/useAuth';
 import { getStartOfWeek, getEndOfWeek, isSameDay } from '@/helpers/date.helper';
 import WeekNavigation from '@/components/WeekNavigation.vue';
@@ -14,17 +10,11 @@ import WorkoutCard from '@/components/workout/WorkoutCard.vue';
 import AppLayout from '@/components/AppLayout.vue';
 
 const { currentUser } = useAuth();
-// Initialize Firebase composable for workouts
+
 const {
   documents: workouts,
   subscribe,
 } = useFirebase<Workout>(Collections.WORKOUTS);
-
-// Initialize Firebase composable for exercises
-const {
-  documents: exercises,
-  subscribe: subscribeExercises
-} = useFirebase<Exercise>(Collections.EXERCISES);
 
 // Week navigation state
 const currentWeekStart = ref(getStartOfWeek(new Date()));
@@ -64,22 +54,22 @@ let unsubscribe: (() => void) | null = null;
 
 const setupWorkoutSubscription = () => {
   if (unsubscribe) {
-     unsubscribe();
-     unsubscribe = null;
+    unsubscribe();
+    unsubscribe = null;
   }
 
   if (currentUser.value) {
-      unsubscribe = subscribe(
+    unsubscribe = subscribe(
       {
         where: [
-            { field: 'userId', operator: '==', value: currentUser.value.uid },
-            { field: 'date', operator: '>=', value: currentWeekStart.value },
-            { field: 'date', operator: '<=', value: currentWeekEnd.value }
+          { field: 'userId', operator: '==', value: currentUser.value.uid },
+          { field: 'date', operator: '>=', value: currentWeekStart.value },
+          { field: 'date', operator: '<=', value: currentWeekEnd.value },
         ],
         orderBy: {
           field: 'date',
-          direction: 'asc'
-        }
+          direction: 'asc',
+        },
       },
       (docs) => {
         console.log('Real-time update received:', docs.length, 'workouts');
@@ -94,7 +84,7 @@ const setupWorkoutSubscription = () => {
 
 // Watch for auth changes
 watch([currentUser, currentWeekStart], () => {
-    setupWorkoutSubscription();
+  setupWorkoutSubscription();
 });
 
 /**
@@ -103,9 +93,6 @@ watch([currentUser, currentWeekStart], () => {
 onMounted(() => {
   // Subscribe to real-time updates for workouts
   setupWorkoutSubscription();
-  
-  // Subscribe to exercises
-  subscribeExercises();
 });
 
 /**
@@ -124,6 +111,6 @@ onUnmounted(() => {
 
     <WeekDayNavigation v-model="selectedDate" :workouts="workouts" />
 
-    <WorkoutCard :date="selectedDate" :workout="selectedDateWorkout" :exercises="exercises" />
+    <WorkoutCard :date="selectedDate" :workout="selectedDateWorkout" />
   </AppLayout>
 </template>

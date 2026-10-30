@@ -7,8 +7,8 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from "firebase/auth";
-import { auth } from "../firebase.config";
-import type { AuthUser, AuthError } from "../types/firebase.types";
+import { auth } from "@/firebase.config";
+import type { AuthUser, AuthError } from "@/types/firebase.types";
 
 /**
  * Vue Composable for Firebase Authentication

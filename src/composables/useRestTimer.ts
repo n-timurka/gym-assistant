@@ -1,5 +1,4 @@
 import { ref, computed, onMounted } from "vue";
-import { useSound } from "./useSound";
 import { useNotification } from "./useNotifications";
 
 // Store data
@@ -12,16 +11,12 @@ const timerState = {
 };
 
 export function useRestTimer() {
-  const { play: playAlarm, unlock: unlockAlarm } = useSound();
   const { requestPermission, scheduleTimerEnd, cancelTimerNotification } =
     useNotification();
   const isRunning = computed(() => timerState.isRunning.value);
 
   async function startTimer(seconds: number) {
     stopTimer();
-
-    // Unlock sound on user gesture (timer start)
-    await unlockAlarm();
 
     const permissionGranted = await requestPermission();
     if (!permissionGranted) {
@@ -44,7 +39,7 @@ export function useRestTimer() {
       timerState.remainingSeconds.value = remaining;
 
       if (remaining <= 0) {
-        stopTimer(true);
+        stopTimer();
       }
     }, 1000);
 
@@ -55,7 +50,7 @@ export function useRestTimer() {
     localStorage.setItem("globalTimerDuration", seconds.toString());
   }
 
-  function stopTimer(completed = false) {
+  function stopTimer() {
     if (timerState.intervalId.value) {
       clearInterval(timerState.intervalId.value);
       timerState.intervalId.value = null;
@@ -63,10 +58,6 @@ export function useRestTimer() {
     timerState.isRunning.value = false;
 
     cancelTimerNotification();
-
-    if (completed) {
-      playAlarm();
-    }
 
     timerState.endTime.value = null;
     timerState.remainingSeconds.value = 0;
