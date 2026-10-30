@@ -84,13 +84,12 @@ onUnmounted(() => {
 <template>
   <div class="image-container" :class="size">
     <IonSkeletonText v-if="loading" animated style="width:100%; height:100%" />
-    <IonImg
+    <img
       v-else-if="imageSrc"
       :src="imageSrc"
       :alt="`Exercise ${exerciseId}`"
       loading="lazy"
-      class="image"
-      @ion-error="hasError = true" />
+      class="image" />
     <div v-else class="placeholder">
       <IonIcon :name="camera" color="primary" />
     </div>

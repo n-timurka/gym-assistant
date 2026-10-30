@@ -41,16 +41,16 @@
           v-model.number="set.weight" 
           :placeholder="isCardio ? '0' : '0'"
           class="set-input"
-          @ionChange="$emit('update-set')"
-        ></ion-input>
+          @ionChange="$emit('update-set', false)"
+        />
         <ion-input 
           v-if="!isCardio"
           type="number" 
           v-model.number="set.reps" 
           placeholder="0"
           class="set-input"
-          @ionChange="$emit('update-set')"
-        ></ion-input>
+          @ionChange="$emit('update-set', false)"
+        />
         <ion-checkbox 
           v-if="isWorkoutStarted"
           v-model="set.isCompleted"
@@ -115,7 +115,7 @@ const emit = defineEmits<{
   (e: 'delete-exercise'): void;
   (e: 'add-set'): void;
   (e: 'remove-set', index: number): void;
-  (e: 'update-set'): void;
+  (e: 'update-set', complete: boolean): void;
   (e: 'timer-requested'): void;
 }>();
 
@@ -130,7 +130,9 @@ const toggleCollapse = () => {
 const isCardio = computed(() => props.exercise.exercise?.category === ExerciseCategory.CARDIO);
 
 const handleCompletion = (set: ExerciseSet) => {
-  emit('update-set');
+  const completed = props.exercise.sets.every(s => s.isCompleted);
+  emit('update-set', completed);
+
   if (set.isCompleted) {
     emit('timer-requested');
   }
@@ -138,6 +140,9 @@ const handleCompletion = (set: ExerciseSet) => {
 </script>
 
 <style scoped>
+.exercise-card {
+  margin: 16px 0 0;
+}
 .exercise-header {
   display: flex;
   align-items: center;

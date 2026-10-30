@@ -3,11 +3,18 @@ import {
   IonReorderGroup,
   IonButton,
   IonFooter,
+  IonAccordionGroup,
+  IonAccordion,
+  IonItem,
+  IonLabel,
+  IonReorder,
 } from '@ionic/vue';
 import WorkoutExerciseCard from '@/components/workout/WorkoutExerciseCard.vue';
 import { WorkoutExercise, Exercise } from '@/types/firebase.types';
 import AddWorkoutModal from './AddWorkoutModal.vue';
+import WorkoutExerciseCard from '@/components/workout/WorkoutExerciseCard.vue';
 import { ref } from 'vue';
+import ExerciseCategoryLabel from '../ExerciseCategoryLabel.vue';
 
 const props = defineProps<{
   exercises: WorkoutExercise[];
@@ -20,7 +27,7 @@ const emit = defineEmits<{
   (e: 'update-set'): void;
   (e: 'reorder', event: CustomEvent): void;
   (e: 'clear-workout'): void;
-  (e: 'open-add-modal'): void;
+  (e: 'open-add-modal', index: number): void;
   (e: 'add-exercises', ids: string[]): void,
 }>();
 
@@ -61,7 +68,7 @@ const loadFromProgram = (ids: string[]) => {
     <!-- Empty State -->
     <div v-if="!exercises.length" class="empty-state ion-padding">
       <p>No exercises added yet.</p>
-      <IonButton fill="outline" @click="$emit('open-add-modal')">
+      <IonButton fill="outline" @click="$emit('open-add-modal', 0)">
         Add Exercise
       </IonButton>
       <p>Or add template from program.</p>
@@ -71,23 +78,31 @@ const loadFromProgram = (ids: string[]) => {
     </div>
 
     <!-- Exercises List -->
-    <ion-reorder-group :disabled="false" @ionItemReorder="handleReorder">
-      <workout-exercise-card
-        v-for="(exercise, index) in exercises"
-        :key="exercise.exerciseId"
-        :exercise="exercise"
-        :exercise-name="getExerciseName(exercise.exerciseId)"
-        :exercise-category="getExerciseCategory(exercise.exerciseId)"
-        :exercise-image="getExerciseImage(exercise.exerciseId)"
-        :exercise-description="getExerciseDescription(exercise.exerciseId)"
-        :is-workout-started="false"
-        :is-collapsible="true"
-        @delete-exercise="$emit('delete-exercise', index)"
-        @add-set="$emit('add-set', index)"
-        @remove-set="(setIndex) => $emit('remove-set', index, setIndex)"
-        @update-set="$emit('update-set')"
-      ></workout-exercise-card>
-    </ion-reorder-group>
+    <IonAccordionGroup class="ion-padding">
+      <IonReorderGroup :disabled="false" @ionItemReorder="handleReorder">
+        <IonAccordion v-for="(exercise, index) in exercises" :key="exercise.exerciseId" :value="exercise.exerciseId">
+          <IonItem v-if="exercise.exercise" slot="header" color="light">
+            <IonLabel>{{ exercise.exercise.name }}</IonLabel>
+            <ExerciseCategoryLabel :category="exercise.exercise?.category" size="sm" />
+            <IonReorder slot="start"></IonReorder>
+          </IonItem>
+          <WorkoutExerciseCard
+            slot="content"
+            :exercise="exercise"
+            :exercise-name="getExerciseName(exercise.exerciseId)"
+            :exercise-category="getExerciseCategory(exercise.exerciseId)"
+            :exercise-image="getExerciseImage(exercise.exerciseId)"
+            :exercise-description="getExerciseDescription(exercise.exerciseId)"
+            :is-workout-started="false"
+            :is-collapsible="true"
+            @delete-exercise="$emit('delete-exercise', index)"
+            @add-set="$emit('add-set', index)"
+            @remove-set="(setIndex: number) => $emit('remove-set', index, setIndex)"
+            @update-set="$emit('update-set')"
+          />
+        </IonAccordion>
+      </IonReorderGroup>
+    </IonAccordionGroup>
 
     <add-workout-modal v-model="isAddWorkoutOpen" @select-workout="loadFromProgram" />
 

@@ -73,7 +73,6 @@ const {
 const workout = ref<Workout | null>(null);
 const loading = ref(true);
 const showAddModal = ref(false);
-const swappingExerciseIndex = ref<number | null>(null);
 
 // Timer State
 // const { startTimer, isTimerRunning } = useTimer();
@@ -493,33 +492,22 @@ const removeSet = (exerciseIndex: number, setIndex: number) => {
   saveWorkoutDebounced();
 };
 
-const openAddExerciseModal = () => {
-  swappingExerciseIndex.value = null;
+const openAddExerciseModal = (index: number) => {
+  swappingExerciseIndex.value = index;
   showAddModal.value = true;
 };
 
+const swappingExerciseIndex = ref(0);
+const isSwapping = ref(false);
 const closeAddModal = () => {
-    showAddModal.value = false;
-    swappingExerciseIndex.value = null;
+  showAddModal.value = false;
+  swappingExerciseIndex.value = 0;
+  isSwapping.value = false;
 }
-
 const handleSwapExercise = (index: number) => {
-    swappingExerciseIndex.value = index;
-    showAddModal.value = true;
-}
-
-const updateWeekPlanSwap = async (oldExerciseId: string, newExerciseId: string) => {
-    if (!currentWeekPlan.value) return;
-    
-    const exercises = [...currentWeekPlan.value.exercises];
-    const index = exercises.findIndex(id => String(id) === String(oldExerciseId));
-    
-    if (index !== -1) {
-        exercises[index] = newExerciseId;
-        await updateWeekPlan(currentWeekPlan.value.id, {
-            exercises
-        });
-    }
+  swappingExerciseIndex.value = index;
+  isSwapping.value = true;
+  showAddModal.value = true;
 }
 
 const addExercises = (ids: string[]) => {
@@ -529,8 +517,7 @@ const addExercises = (ids: string[]) => {
 const addExerciseToWorkout = async (exerciseId: string | number) => {
   if (!workout.value) return;
   
-  // If not swapping, check for duplicates (unless we want to allow duplicates, but usually not)
-  if (swappingExerciseIndex.value === null && isExerciseInWorkout(exerciseId)) {
+  if (isExerciseInWorkout(exerciseId)) {
     return;
   }
   
@@ -551,25 +538,19 @@ const addExerciseToWorkout = async (exerciseId: string | number) => {
   const newExercise: WorkoutExercise = {
     exerciseId: String(exerciseId),
     sets: initialSets,
-    order: swappingExerciseIndex.value !== null
-      ? workout.value.exercises[swappingExerciseIndex.value].order
-      : workout.value.exercises.length
+    order: workout.value.exercises[swappingExerciseIndex.value].order
   };
   
-  if (swappingExerciseIndex.value !== null) {
-      // Swap logic
-      const oldExerciseId = workout.value.exercises[swappingExerciseIndex.value].exerciseId;
-      await updateWeekPlanSwap(oldExerciseId, String(exerciseId));
-      
-      workout.value.exercises.splice(swappingExerciseIndex.value, 1, newExercise);
+  if (isSwapping.value) {
+    workout.value.exercises.splice(swappingExerciseIndex.value, 1, newExercise);
   } else {
-      // Add logic
-      workout.value.exercises.push(newExercise);
+    workout.value.exercises.splice(swappingExerciseIndex.value ?? workout.value.exercises.length, 0, newExercise);
   }
   
   await updateWorkout(workoutId, { exercises: workout.value.exercises });
   showAddModal.value = false;
-  swappingExerciseIndex.value = null;
+  swappingExerciseIndex.value = 0;
+  isSwapping.value = false;
 };
 
 const deleteExercise = async (exerciseIndex: number) => {

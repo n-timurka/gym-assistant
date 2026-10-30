@@ -11,13 +11,16 @@ import {
   IonIcon,
   IonAvatar,
   IonButton,
+  IonNote,
 } from '@ionic/vue';
 import { logOutOutline, trash } from 'ionicons/icons';
 import { useAuth } from '@/composables/useAuth';
 import { clearExerciseCache, getCacheSize } from '@/helpers/capacitor.helper';
 import AppLayout from '@/components/AppLayout.vue';
-import { computed, onMounted, ref } from 'vue';
+import { computed, inject, onMounted, ref } from 'vue';
 import { useRestTimer } from '@/composables/useRestTimer';
+
+const appVersion = inject('appVersion');
 
 const router = useRouter();
 const { currentUser, logout } = useAuth();
@@ -71,6 +74,9 @@ const { startTimer } = useRestTimer();
             @click="item.action">
             <IonIcon slot="start" :icon="item.icon" />
             <IonLabel>{{ item.label }}</IonLabel>
+          </IonItem>
+          <IonItem>
+            <IonNote class="ion-text-center">Version: {{ appVersion }}</IonNote>
           </IonItem>
         </IonList>
         <IonButton @click="startTimer(5)">5 Sec Timer</IonButton>

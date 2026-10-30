@@ -1,7 +1,8 @@
-import { createApp } from "vue";
+import { createApp, readonly } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import "./firebase.config"; // Initialize Firebase
+import { appVersion } from './config';
 
 import { IonicVue } from "@ionic/vue";
 
@@ -39,7 +40,10 @@ import "@ionic/vue/css/ionic-swiper.css";
 /* Theme variables */
 import "./theme/variables.css";
 
-const app = createApp(App).use(IonicVue).use(router);
+const app = createApp(App)
+  .use(IonicVue)
+  .use(router)
+  .provide('appVersion', '1.0.0');
 
 router.isReady().then(() => {
   app.mount("#app");

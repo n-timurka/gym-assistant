@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, shallowRef } from 'vue';
+import { computed, onMounted, ref, shallowRef, watch } from 'vue';
 import {
   IonButton,
   IonIcon,
@@ -37,7 +37,7 @@ const emit = defineEmits<{
   (e: 'update-set'): void;
   (e: 'timer-requested'): void;
   (e: 'swap-exercise', index: number): void;
-  (e: 'open-add-modal'): void;
+  (e: 'open-add-modal', index: number): void;
   (e: 'delete-exercise', index: number): void;
 }>();
 
@@ -48,6 +48,10 @@ const selectedTab = ref('sets');
 
 onMounted(() => {
   currentExerciseIndex.value = Number(localStorage.getItem('CurrentExerciseIndex')) || 0;
+});
+watch(() => exercises, () => {
+  if (exercises.length > currentExerciseIndex.value) return;
+  currentExerciseIndex.value = exercises.length - 1;
 });
 
 const onSlideChange = (swiper: SwiperClass) => {
@@ -73,14 +77,14 @@ const openExerciseActions = async () => {
         text: 'Add Exercise',
         icon: addCircleOutline,
         handler: () => {
-            emit('open-add-modal');
+          emit('open-add-modal', currentExerciseIndex.value);
         }
       },
       {
         text: 'Swap Exercise',
         icon: swapHorizontalOutline,
         handler: () => {
-            emit('swap-exercise', currentExerciseIndex.value);
+          emit('swap-exercise', currentExerciseIndex.value);
         }
       },
       {
@@ -88,7 +92,7 @@ const openExerciseActions = async () => {
         icon: trashOutline,
         role: 'destructive',
         handler: () => {
-            emit('delete-exercise', currentExerciseIndex.value);
+          emit('delete-exercise', currentExerciseIndex.value);
         }
       },
       {
@@ -101,7 +105,11 @@ const openExerciseActions = async () => {
   await actionSheet.present();
 };
 
-const handleSetUpdate = () => {
+const handleSetUpdate = (complete: boolean) => {
+  if (complete) {
+    goNext();
+  }
+
   emit('update-set');
 };
 </script>
@@ -241,7 +249,7 @@ const handleSetUpdate = () => {
       <div class="bottom-actions-menu">
         <IonButton expand="block" fill="outline" @click="openExerciseActions">
             <IonIcon slot="start" :icon="ellipsisHorizontalOutline" />
-            Exercise Options
+            Options
         </IonButton>
       </div>
     </div>
@@ -273,7 +281,7 @@ const handleSetUpdate = () => {
   border-radius: 12px;
   overflow: hidden;
   background: var(--ion-color-light);
-  margin-bottom: 12px;
+  margin-bottom: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -341,30 +349,29 @@ const handleSetUpdate = () => {
 ion-segment-button {
     --padding-start: 0;
     --padding-end: 0;
-    min-height: 40px;
+    min-height: 32px;
 }
 
 .detail-section {
-    margin-bottom: 1rem;
-    background: var(--ion-color-light);
-    padding: 1rem;
-    border-radius: 8px;
+  background: var(--ion-color-light);
+  padding: 1rem;
+  border-radius: 8px;
 }
 
 .detail-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-    color: var(--ion-color-dark);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: var(--ion-color-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .muscles-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .muscle-tag {

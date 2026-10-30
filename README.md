@@ -56,6 +56,7 @@ Before you begin, ensure you have the following installed:
         ```
     -   Replace the values with your Firebase project credentials found in the Firebase Console (Project Settings > General > Your apps).
     -   *Note: For more details on Firebase setup, check [FIREBASE_SETUP.md](./FIREBASE_SETUP.md).*
+    - To deploy, run the command: `firebase deploy`
 
 ## 🏃‍♂️ Running the App
 
@@ -79,7 +80,7 @@ The application will be available at `http://localhost:8100` (or `http://localho
 -   Navigate to the **Exercises** tab.
 -   Filter by **Category** (Chest, Back, Legs, etc.) or **Type** (Free Weights, Machines, etc.).
 -   Click on any exercise to view details, instructions, and **Similar Exercises**.
--   **Admin Tip**: Use the "Seed" button (download icon) in the header to populate the database with initial exercise data.
+-   **Database Seeding**: Populate the database with initial exercise data using the seed script: `npx tsx data/seed.ts` (see [FIREBASE_SETUP.md](./FIREBASE_SETUP.md)).
 
 ### 3. Creating a Workout
 -   Go to the **Workouts** tab.
@@ -93,6 +94,14 @@ The application will be available at `http://localhost:8100` (or `http://localho
 -   Use the built-in rest timer between sets.
 -   You can **Swap** exercises on the fly if a machine is busy—Gym Assistant will suggest similar alternatives!
 -   Click **End Workout** when finished to save your progress.
+
+## 📚 Documentation & Developer Guides
+
+- **[System Architecture](./docs/architecture.md)**: Layering, component tree, state management, and Capacitor/PWA integration.
+- **[Data Schema & Rules](./docs/data-schema.md)**: Cloud Firestore collections, document interfaces, composite indexes, and security rules.
+- **[Coding Style & Guidelines](./docs/coding-style.md)**: TypeScript standards, Vue 3 / Ionic conventions, async error handling, and clean code rules.
+- **[Task Backlog (P0, P1, P2)](./TASKS.md)**: Prioritized backlog of actionable implementation tasks with acceptance criteria.
+- **[Firebase Setup Guide](./FIREBASE_SETUP.md)**: Firebase project configuration, authentication, Firestore, storage, and rules deployment.
 
 ## 🤝 Contributing
 
