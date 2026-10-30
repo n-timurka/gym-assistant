@@ -1,8 +1,7 @@
-import { createApp, readonly } from "vue";
+import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import "./firebase.config"; // Initialize Firebase
-import { appVersion } from './config';
 
 import { IonicVue } from "@ionic/vue";
 

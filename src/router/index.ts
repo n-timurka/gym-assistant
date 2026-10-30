@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { RouteRecordRaw } from 'vue-router';
+import { RouteRecordRaw, RouteLocationNormalized, NavigationGuardNext } from 'vue-router';
 import { watch } from 'vue';
 import TabsPage from '@/views/TabsPage.vue';
 import { useAuth } from '@/composables/useAuth';
@@ -74,7 +74,7 @@ const router = createRouter({
 });
 
 // Navigation guard for authentication
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
   const { isAuthenticated, authInitialized } = useAuth();
 
   // Wait for auth to initialize

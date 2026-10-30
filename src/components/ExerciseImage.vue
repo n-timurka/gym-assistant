@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonIcon, IonImg, IonSkeletonText } from '@ionic/vue';
+import { IonIcon, IonSkeletonText } from '@ionic/vue';
 import { camera } from 'ionicons/icons';
 import { computed, onUnmounted, ref, watch } from 'vue';
 import { storage } from '@/firebase.config';

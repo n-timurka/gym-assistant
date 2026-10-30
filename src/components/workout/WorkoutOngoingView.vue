@@ -19,7 +19,7 @@ import {
   ellipsisHorizontalOutline,
 } from 'ionicons/icons';
 import WorkoutExerciseCard from '@/components/workout/WorkoutExerciseCard.vue';
-import { ExerciseSet, type WorkoutExercise } from '@/types/firebase.types';
+import { type WorkoutExercise } from '@/types/firebase.types';
 import ExerciseImage from '@/components/ExerciseImage.vue';
 import ExerciseCategoryLabel from '@/components/ExerciseCategoryLabel.vue';
 import ExerciseTypeLabel from '@/components/ExerciseTypeLabel.vue';
