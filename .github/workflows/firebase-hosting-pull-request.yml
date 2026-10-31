@@ -40,9 +40,10 @@ jobs:
         run: npm run test:unit
 
       - name: Run Cypress E2E Tests
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
-          start: npm run dev
+          build: npm run build
+          start: npm run preview
           wait-on: "http://localhost:5173"
           browser: chrome
           spec: tests/e2e/specs/**/*.cy.ts

@@ -56,7 +56,6 @@ describe('AccountPage.vue', () => {
     await wrapper.vm.$nextTick();
 
     // expect(wrapper.text()).toContain('Demo Athlete');
-    console.log(wrapper.text());
     expect(wrapper.text()).toContain('Version: 1.0.0-test');
   });
 
