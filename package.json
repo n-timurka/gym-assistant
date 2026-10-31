@@ -7,8 +7,12 @@
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:unit:coverage": "vitest run --coverage",
     "test:e2e": "cypress run",
-    "test:unit": "vitest",
+    "test:e2e:open": "cypress open",
+    "test:all": "npm run test:unit && npm run test:e2e",
     "lint": "eslint .",
     "firebase:deploy": "firebase deploy --only hosting"
   },
