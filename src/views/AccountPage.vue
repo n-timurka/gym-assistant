@@ -22,7 +22,7 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/vue';
-import { logOutOutline, pencil, timeOutline, trash } from 'ionicons/icons';
+import { logOutOutline, timeOutline, trash } from 'ionicons/icons';
 import { useAuth } from '@/composables/useAuth';
 import { clearExerciseCache, getCacheSize } from '@/helpers/capacitor.helper';
 import AppLayout from '@/components/AppLayout.vue';
