@@ -42,7 +42,7 @@ import "./theme/variables.css";
 const app = createApp(App)
   .use(IonicVue)
   .use(router)
-  .provide('appVersion', '1.0.0');
+  .provide('appVersion', '1.0.1');
 
 router.isReady().then(() => {
   app.mount("#app");
