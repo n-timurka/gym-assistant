@@ -52,4 +52,4 @@ vite.config.mts.timestamp-*
 .eslintcache
 
 # Local seed data
-/data
+/data/seed.ts
