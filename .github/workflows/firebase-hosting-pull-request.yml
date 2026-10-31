@@ -39,14 +39,13 @@ jobs:
       - name: Run Vitest Unit & Component Tests
         run: npm run test:unit
 
+      - name: Build
+        run: npm run build
+
       - name: Run Cypress E2E Tests
         uses: cypress-io/github-action@v7
         with:
-          build: npm run build
           start: npm run preview
-          wait-on: "http://localhost:5173"
+          wait-on: "http://localhost:4173"
           browser: chrome
           spec: tests/e2e/specs/**/*.cy.ts
-
-      - name: Build
-        run: npm run build
