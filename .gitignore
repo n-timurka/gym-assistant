@@ -45,11 +45,11 @@ vite.config.ts.timestamp-*
 vite.config.mts.timestamp-*
 
 # Cypress
-cypress/videos
-cypress/screenshots
+**/e2e/videos
+**/e2e/screenshots
 
 # ESLint
 .eslintcache
 
 # Local seed data
-/data
+/data/seed.ts

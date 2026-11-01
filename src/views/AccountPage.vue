@@ -22,23 +22,26 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/vue';
-import { logOutOutline, pencil, timeOutline, trash } from 'ionicons/icons';
+import { logOutOutline, timeOutline, trash } from 'ionicons/icons';
 import { useAuth } from '@/composables/useAuth';
 import { clearExerciseCache, getCacheSize } from '@/helpers/capacitor.helper';
 import AppLayout from '@/components/AppLayout.vue';
 import { computed, onMounted, reactive, ref, watch, inject } from 'vue';
 import { useRestTimer } from '@/composables/useRestTimer';
-import { db } from '@/firebase.config';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import type { PersonalData } from '@/types/firebase.types';
+import { useFirebase } from '@/composables/useFirebase';
+import { Collections, type PersonalData } from '@/types/firebase.types';
 
 const appVersion = inject('appVersion');
+const {
+  document: personalData,
+  getById,
+  update
+} = useFirebase<PersonalData>(Collections.USERS);
 
 const router = useRouter();
 const { currentUser, logout } = useAuth();
 const { startTimer } = useRestTimer();
 const cacheSize = ref<number|null>();
-const personalData = ref<PersonalData | null>(null);
 const isLoadingProfile = ref(false);
 const isEditOpen = ref(false);
 const isSaving = ref(false);
@@ -60,25 +63,11 @@ const bmi = computed(() => {
   return Number((form.weight / Math.pow(form.height / 100, 2)).toFixed(1));
 });
 
-const loadPersonalData = async (uid: string) => {
-  isLoadingProfile.value = true;
-  try {
-    const snapshot = await getDoc(doc(db, 'users', uid));
-    personalData.value = snapshot.exists()
-      ? ({ id: snapshot.id, ...snapshot.data() } as PersonalData)
-      : null;
-  } catch (error) {
-    console.error('Unable to load personal data:', error);
-  } finally {
-    isLoadingProfile.value = false;
-  }
-};
-
 watch(
   () => currentUser.value?.uid,
   (uid) => {
     personalData.value = null;
-    if (uid) loadPersonalData(uid);
+    if (uid) getById(uid);
   },
   { immediate: true },
 );
@@ -122,7 +111,7 @@ const savePersonalData = async () => {
   };
 
   try {
-    await setDoc(doc(db, 'users', uid), updatedData, { merge: true });
+    await update(uid, updatedData);
     personalData.value = { id: uid, ...updatedData };
     isEditOpen.value = false;
   } catch (error) {
@@ -168,7 +157,7 @@ const menuItems = computed(() => [
         fill="clear"
         aria-label="Edit personal data"
         @click="openEditModal">
-        <IonIcon :icon="pencil" />
+        Edit
       </IonButton>
       <IonCardHeader class="ion-display-flex ion-align-items-center ion-flex-column">
         <IonAvatar>
