@@ -425,7 +425,9 @@ const addExerciseToWorkout = async (exerciseId: string | number) => {
   const newExercise: WorkoutExercise = {
     exerciseId: String(exerciseId),
     sets: initialSets,
-    order: workout.value.exercises[swappingExerciseIndex.value].order
+    order: swappingExerciseIndex.value
+      ? workout.value.exercises[swappingExerciseIndex.value].order
+      : workout.value.exercises.length
   };
   
   if (isSwapping.value) {
