@@ -433,7 +433,10 @@ const addExerciseToWorkout = async (exerciseId: string | number) => {
   if (isSwapping.value) {
     workout.value.exercises.splice(swappingExerciseIndex.value, 1, newExercise);
   } else {
-    workout.value.exercises.splice(swappingExerciseIndex.value ?? workout.value.exercises.length, 0, newExercise);
+    workout.value.exercises.splice(
+      swappingExerciseIndex.value > 0
+      ? swappingExerciseIndex.value
+      : workout.value.exercises.length, 0, newExercise);
   }
   
   await updateWorkout(workoutId, { exercises: workout.value.exercises });
