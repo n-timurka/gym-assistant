@@ -1,59 +1,79 @@
 <template>
-  <AppLayout
+  <app-layout
     :title="program?.name || 'Program'"
     :loading="loading"
-    no-padding
-    back-route="/tabs/programs">
-      <div v-if="program" class="ion-padding-horizontal">
-        <section class="ion-padding-vertical">
-          <div class="ion-display-flex ion-align-items-center ion-justify-content-between">
-            <h1 class="ion-no-margin">{{ program.name }}</h1>
-            <IonBadge :color="program.isActive ? 'success' : 'medium'">
-              {{ program.isActive ? 'Active' : 'Inactive' }}
-            </IonBadge>
-          </div>
-          <p v-if="program.description">{{ program.description }}</p>
-          <p><strong>Difficulty:</strong> {{ program.difficultyLevel }}</p>
-        </section>
-
-        <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
-          <h2>Workouts <IonBadge>{{ program.workouts.length }}</IonBadge></h2>
-          <IonButton size="small" @click="addWorkout">
-            <IonIcon slot="start" :icon="addOutline" />
-            Workout
-          </IonButton>
+    noPadding
+    backRoute="/tabs/programs"
+  >
+    <div
+      v-if="program"
+      class="ion-padding-horizontal"
+    >
+      <section class="ion-padding-vertical">
+        <div class="ion-display-flex ion-align-items-center ion-justify-content-between">
+          <h1 class="ion-no-margin">
+            {{ program.name }}
+          </h1>
+          <ion-badge :color="program.isActive ? 'success' : 'medium'">
+            {{ program.isActive ? 'Active' : 'Inactive' }}
+          </ion-badge>
         </div>
+        <p v-if="program.description">
+          {{ program.description }}
+        </p>
+        <p><strong>Difficulty:</strong> {{ program.difficultyLevel }}</p>
+      </section>
 
-        <EmptyState
-          v-if="programWorkouts.length === 0"
-          title="No workouts yet"
-          description="Add a workout, then fill it with exercises."
-          :action="{ label: 'Add Workout', onClick: addWorkout }"
+      <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
+        <h2>Workouts <ion-badge>{{ program.workouts.length }}</ion-badge></h2>
+        <ion-button
+          size="small"
+          @click="addWorkout"
+        >
+          <template #start>
+            <ion-icon 
+              :icon="addOutline"
+            />
+          </template>
+          Workout
+        </ion-button>
+      </div>
+
+      <empty-state
+        v-if="programWorkouts.length === 0"
+        title="No workouts yet"
+        description="Add a workout, then fill it with exercises."
+        :action="{ label: 'Add Workout', onClick: addWorkout }"
+      />
+
+      <ion-accordion-group>
+        <program-workout
+          v-for="(workout, index) in programWorkouts"
+          :key="workout.id"
+          :exercises="workout.exercises"
+          :index="index"
+          @delete-workout="confirmDeleteWorkout"
+          @add-exercise="openExerciseModal"
+          @delete-exercise="removeExercise"
         />
+      </ion-accordion-group>
+    </div>
 
-        <IonAccordionGroup>
-          <ProgramWorkout
-            v-for="(workout, index) in programWorkouts"
-            :key="workout.id"
-            :exercises="workout.exercises"
-            :index="index"
-            @delete-workout="confirmDeleteWorkout"
-            @add-exercise="openExerciseModal"
-            @delete-exercise="removeExercise" />
-        </IonAccordionGroup>
-      </div>
+    <div
+      v-else
+      class="ion-padding ion-text-center"
+    >
+      Program not found...
+    </div>
 
-      <div v-else class="ion-padding ion-text-center">
-        Program not found...
-      </div>
-
-      <AddExerciseModal
-        :is-open="showExerciseModal"
-        :all-exercises="exercises"
-        :is-exercise-in-workout="() => false"
-        @add-exercise="addExerciseToSelectedWorkout"
-        @close="closeExerciseModal" />
-  </AppLayout>
+    <add-exercise-modal
+      :isOpen="showExerciseModal"
+      :allExercises="exercises"
+      :isExerciseInWorkout="() => false"
+      @add-exercise="addExerciseToSelectedWorkout"
+      @close="closeExerciseModal"
+    />
+  </app-layout>
 </template>
 
 <script setup lang="ts">

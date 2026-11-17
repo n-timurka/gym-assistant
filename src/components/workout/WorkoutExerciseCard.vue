@@ -1,53 +1,3 @@
-<template>
-  <ion-card class="exercise-card">
-    <ion-card-content>
-      <!-- Sets Header -->
-      <div class="sets-header" :class="{ 'cardio-header': isCardio }">
-        <span>Set</span>
-        <span>{{ isCardio ? 'Time (min)' : 'kg' }}</span>
-        <span v-if="!isCardio">Reps</span>
-        <span>Done</span>
-      </div>
-
-      <!-- Sets List -->
-      <div
-        v-for="(set, setIndex) in exercise.sets"
-        :key="setIndex"
-        class="set-row"
-        :class="{ 'cardio-row': isCardio }">
-        <div class="set-number">{{ setIndex + 1 }}</div>
-        <ion-input 
-          type="number" 
-          v-model.number="set.weight" 
-          :placeholder="isCardio ? '0' : '0'"
-          class="set-input"
-          @ionChange="$emit('update-set', false)"
-        />
-        <ion-input 
-          v-if="!isCardio"
-          type="number" 
-          v-model.number="set.reps" 
-          placeholder="0"
-          class="set-input"
-          @ionChange="$emit('update-set', false)"
-        />
-        <ion-checkbox 
-          v-model="set.isCompleted"
-          @ionChange="handleCompletion(set)"
-        />
-        <ion-button v-if="!isCardio" fill="clear" color="danger" size="small" @click="$emit('remove-set', setIndex)">
-          <ion-icon slot="icon-only" :icon="closeOutline"></ion-icon>
-        </ion-button>
-      </div>
-
-      <!-- Add Set Button -->
-      <ion-button v-if="!isCardio" expand="block" fill="clear" size="small" @click="$emit('add-set')">
-        + Add Set
-      </ion-button>
-    </ion-card-content>
-  </ion-card>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue';
 import {
@@ -59,15 +9,16 @@ import {
   IonCheckbox
 } from '@ionic/vue';
 import { closeOutline } from 'ionicons/icons';
-import { WorkoutExercise, ExerciseSet, ExerciseCategory } from '@/types/firebase.types';
+import type { WorkoutExercise, ExerciseSet} from '@/types/firebase.types';
+import { ExerciseCategory } from '@/types/firebase.types';
 
 const { exercise } = defineProps<{
   exercise: WorkoutExercise;
 }>();
 
 const emit = defineEmits<{
-  (e: 'add-set'): void;
-  (e: 'remove-set', index: number): void;
+  (e: 'add-set', index: number): void;
+  (e: 'remove-set', index: number, setIndex: number): void;
   (e: 'update-set', complete: boolean): void;
   (e: 'timer-requested'): void;
 }>();
@@ -84,9 +35,79 @@ const handleCompletion = (set: ExerciseSet) => {
 };
 </script>
 
+<template>
+  <ion-card class="exercise-card">
+    <ion-card-content>
+      <!-- Sets Header -->
+      <div
+        class="sets-header"
+        :class="{ 'cardio-header': isCardio }"
+      >
+        <span>Set</span>
+        <span>{{ isCardio ? 'Time (min)' : 'kg' }}</span>
+        <span v-if="!isCardio">Reps</span>
+        <span>Done</span>
+      </div>
+
+      <!-- Sets List -->
+      <div
+        v-for="(set, setIndex) in exercise.sets"
+        :key="setIndex"
+        class="set-row"
+        :class="{ 'cardio-row': isCardio }"
+      >
+        <div class="set-number">
+          {{ setIndex + 1 }}
+        </div>
+        <ion-input 
+          v-model.number="set.weight" 
+          type="number" 
+          :placeholder="isCardio ? '0' : '0'"
+          class="set-input"
+          @ion-change="$emit('update-set', false)"
+        />
+        <ion-input 
+          v-if="!isCardio"
+          v-model.number="set.reps" 
+          type="number" 
+          placeholder="0"
+          class="set-input"
+          @ion-change="$emit('update-set', false)"
+        />
+        <ion-checkbox 
+          v-model="set.isCompleted"
+          @ion-change="handleCompletion(set)"
+        />
+        <ion-button
+          v-if="!isCardio"
+          fill="clear"
+          color="danger"
+          size="small"
+          @click="$emit('remove-set', exercise.sets.length - 1, exercise.sets.length - 1)"
+        >
+          <template #icon-only>
+            <ion-icon :icon="closeOutline" />
+          </template>
+        </ion-button>
+      </div>
+
+      <!-- Add Set Button -->
+      <ion-button
+        v-if="!isCardio"
+        expand="block"
+        fill="clear"
+        size="small"
+        @click="$emit('add-set', exercise.sets.length)"
+      >
+        + Add Set
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+</template>
+
 <style scoped>
 .exercise-card {
-  margin: 16px 0 0;
+  margin: 0;
 }
 .exercise-header {
   display: flex;

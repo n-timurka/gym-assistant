@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ExerciseCategory } from '@/types/firebase.types';
+import type { ExerciseCategory } from '@/types/firebase.types';
 import { IonChip, IonLabel } from '@ionic/vue';
 import { computed } from 'vue';
 
@@ -19,12 +19,18 @@ const sizeClass = computed(() => ({
 </script>
 
 <template>
-  <IonChip :class="categoryClass" :style="sizeClass">
-    <span :class="iconClass" style="
+  <ion-chip
+    :class="categoryClass"
+    :style="sizeClass"
+  >
+    <span
+      :class="iconClass"
+      style="
       width: 0.5em;
       height: 0.5rem;
       border-radius: 50%;
-      margin-right: 0.25rem;" />
-    <IonLabel>{{ category }}</IonLabel>
-  </IonChip>
+      margin-right: 0.25rem;"
+    />
+    <ion-label>{{ category }}</ion-label>
+  </ion-chip>
 </template>

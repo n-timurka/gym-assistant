@@ -50,14 +50,14 @@ const loadImage = async () => {
       imageName.value,
       abortController.value.signal,
     );
-  } catch (error: any) {
-    if (error.name === 'AbortError') {
+  } catch (err) {
+    if ((err as Error).name === 'AbortError') {
       return;
     }
 
-    console.warn(`Failed to load image for ${exerciseId}:`, error);
+    console.warn(`Failed to load image for ${exerciseId}:`, (err as Error)?.message || err);
 
-    if (error.message?.includes('CORS') || error.name === 'TypeError') {
+    if ((err as Error)?.message?.includes('CORS') || (err as Error)?.name === 'TypeError') {
       console.warn('CORS fallback: using direct URL');
       const imageRef = storageRef(storage, imageName.value);
       imageSrc.value = await getDownloadURL(imageRef);
@@ -82,16 +82,30 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="image-container" :class="size">
-    <IonSkeletonText v-if="loading" animated style="width:100%; height:100%" />
+  <div
+    class="image-container"
+    :class="size"
+  >
+    <ion-skeleton-text
+      v-if="loading"
+      animated
+      style="width:100%; height:100%"
+    />
     <img
       v-else-if="imageSrc"
       :src="imageSrc"
       :alt="`Exercise ${exerciseId}`"
       loading="lazy"
-      class="image" />
-    <div v-else class="placeholder">
-      <IonIcon :name="camera" color="primary" />
+      class="image"
+    >
+    <div
+      v-else
+      class="placeholder"
+    >
+      <ion-icon
+        :name="camera"
+        color="primary"
+      />
     </div>
   </div>
 </template>

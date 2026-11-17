@@ -22,7 +22,10 @@ const sizeClass = computed(() => ({
 </script>
 
 <template>
-  <IonChip :color="typeColor" :style="sizeClass">
-    <IonLabel>{{ type }}</IonLabel>
-  </IonChip>
+  <ion-chip
+    :color="typeColor"
+    :style="sizeClass"
+  >
+    <ion-label>{{ type }}</ion-label>
+  </ion-chip>
 </template>

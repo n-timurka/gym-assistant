@@ -1,5 +1,5 @@
 import {
-  Exercise,
+  type Exercise,
   ExerciseCategory,
   ExerciseType,
 } from "@/types/firebase.types";

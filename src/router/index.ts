@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { RouteRecordRaw, RouteLocationNormalized, NavigationGuardNext } from 'vue-router';
+import type { RouteRecordRaw, RouteLocationNormalized, NavigationGuardNext } from 'vue-router';
 import { watch } from 'vue';
 import TabsPage from '@/views/TabsPage.vue';
 import { useAuth } from '@/composables/useAuth';

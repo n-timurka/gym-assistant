@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, shallowRef, watch } from 'vue';
+import { useWorkoutDetail } from '@/composables/useWorkoutDetail';
 import {
   IonButton,
   IonIcon,
@@ -18,40 +19,38 @@ import {
   trashOutline,
   ellipsisHorizontalOutline,
 } from 'ionicons/icons';
+import AddExerciseModal from './AddExerciseModal.vue';
 import WorkoutExerciseCard from '@/components/workout/WorkoutExerciseCard.vue';
-import { type WorkoutExercise } from '@/types/firebase.types';
 import ExerciseImage from '@/components/ExerciseImage.vue';
 import ExerciseCategoryLabel from '@/components/ExerciseCategoryLabel.vue';
 import ExerciseTypeLabel from '@/components/ExerciseTypeLabel.vue';
-import SwiperClass from 'swiper';
+import type SwiperClass from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 
- const { exercises } = defineProps<{
-  exercises: WorkoutExercise[];
-  workoutProgress: number;
-}>();
-
-const emit = defineEmits<{
-  (e: 'add-set', index: number): void;
-  (e: 'remove-set', index: number, setIndex: number): void;
-  (e: 'update-set'): void;
-  (e: 'timer-requested'): void;
-  (e: 'swap-exercise', index: number): void;
-  (e: 'open-add-modal', index: number): void;
-  (e: 'delete-exercise', index: number): void;
-}>();
+const {
+  workoutExercises: exercises,
+  workoutProgress,
+  addExercise,
+  deleteExercise,
+  addSet,
+  removeSet,
+  saveWorkoutDebounced,
+  openAddModal,
+  openSwapModal,
+  requestRestTimer,
+} = useWorkoutDetail();
 
 const swiperInstance = shallowRef<SwiperClass|null>(null);
 const currentExerciseIndex = ref(0);
-const currentExercise = computed(() => exercises[currentExerciseIndex.value]);
+const currentExercise = computed(() => exercises.value[currentExerciseIndex.value]);
 const selectedTab = ref('sets');
 
 onMounted(() => {
   currentExerciseIndex.value = Number(localStorage.getItem('CurrentExerciseIndex')) || 0;
 });
-watch(() => exercises, () => {
-  if (exercises.length > currentExerciseIndex.value) return;
-  currentExerciseIndex.value = exercises.length - 1;
+watch(() => exercises.value, () => {
+  if (exercises.value.length > currentExerciseIndex.value) return;
+  currentExerciseIndex.value = exercises.value.length - 1;
 });
 
 const onSlideChange = (swiper: SwiperClass) => {
@@ -77,14 +76,15 @@ const openExerciseActions = async () => {
         text: 'Add Exercise',
         icon: addCircleOutline,
         handler: () => {
-          emit('open-add-modal', currentExerciseIndex.value);
+          openAddModal(currentExerciseIndex.value);
         }
       },
       {
         text: 'Swap Exercise',
         icon: swapHorizontalOutline,
         handler: () => {
-          emit('swap-exercise', currentExerciseIndex.value);
+          openSwapModal(currentExerciseIndex.value);
+          isSwapping.value = true;
         }
       },
       {
@@ -92,7 +92,7 @@ const openExerciseActions = async () => {
         icon: trashOutline,
         role: 'destructive',
         handler: () => {
-          emit('delete-exercise', currentExerciseIndex.value);
+          deleteExercise(currentExerciseIndex.value);
         }
       },
       {
@@ -110,7 +110,13 @@ const handleSetUpdate = (complete: boolean) => {
     goNext();
   }
 
-  emit('update-set');
+  saveWorkoutDebounced();
+};
+
+const isSwapping = ref(false);
+const handleAddExercise = (id: string) => {
+  addExercise(id, currentExerciseIndex.value, isSwapping.value);
+  isSwapping.value = false;
 };
 </script>
 
@@ -123,69 +129,101 @@ const handleSetUpdate = (complete: boolean) => {
           <span>Progress</span>
           <span>{{ Math.round(workoutProgress * 100) }}%</span>
         </div>
-        <IonProgressBar :value="workoutProgress" color="success" />
+        <ion-progress-bar
+          :value="workoutProgress"
+          color="success"
+        />
       </div>
 
       <!-- Exercises navigation -->
       <div class="navigation-header ion-padding-horizontal ion-padding-top">
-        <IonButton fill="clear" @click="goPrev">
-          <IonIcon slot="icon-only" :icon="chevronBackOutline" />
-        </IonButton>
+        <ion-button
+          fill="clear"
+          @click="goPrev"
+        >
+          <template #icon-only>
+            <ion-icon :icon="chevronBackOutline" />
+          </template>
+        </ion-button>
 
         <div class="exercise-title-container">
           <h2 class="ion-text-center ion-no-margin">
             {{ currentExercise.exercise?.name }}
           </h2>
-          <IonText color="medium" class="ion-text-center text-xs">
+          <ion-text
+            color="medium"
+            class="ion-text-center text-xs"
+          >
             {{ currentExerciseIndex + 1 }} of {{ exercises.length }}
-          </IonText>
+          </ion-text>
         </div>
 
-        <IonButton fill="clear" @click="goNext">
-          <IonIcon slot="icon-only" :icon="chevronForwardOutline" />
-        </IonButton>
+        <ion-button
+          fill="clear"
+          @click="goNext"
+        >
+          <template #icon-only>
+            <ion-icon :icon="chevronForwardOutline" />
+          </template>
+        </ion-button>
       </div>
 
       <!-- Exercise Content -->
-      <Swiper @slideChange="onSlideChange" @swiper="onSwiperInit">
-        <SwiperSlide
+      <swiper
+        @slide-change="onSlideChange"
+        @swiper="onSwiperInit"
+      >
+        <swiper-slide
           v-for="exercise in exercises"
           :key="exercise.exerciseId"
-          class="exercise-content ion-padding flex-grow overflow-y-auto">
+          class="exercise-content ion-padding flex-grow overflow-y-auto"
+        >
           <!-- Image & Description -->
           <div class="media-container">
-            <div v-if="exercise.exercise" class="exercise-image-container relative">
+            <div
+              v-if="exercise.exercise"
+              class="exercise-image-container relative"
+            >
               <div class="exercise-badges-overlay">
-                <ExerciseCategoryLabel :category="exercise.exercise?.category" size="sm" />
-                <ExerciseTypeLabel :type="exercise.exercise.type" />
+                <exercise-category-label
+                  :category="exercise.exercise?.category"
+                  size="sm"
+                />
+                <exercise-type-label :type="exercise.exercise.type" />
               </div>
-              <ExerciseImage :exercise-id="exercise.exercise?.extId" size="lg" />
+              <exercise-image
+                :exerciseId="exercise.exercise.extId"
+                size="lg"
+              />
             </div>
 
             <!-- Segments -->
             <div class="exercise-details">
-              <IonSegment v-model="selectedTab">
-                <IonSegmentButton value="sets">
-                  <IonLabel>Sets</IonLabel>
-                </IonSegmentButton>
-                <IonSegmentButton value="info">
-                  <IonLabel>Info</IonLabel>
-                </IonSegmentButton>
-              </IonSegment>
+              <ion-segment v-model="selectedTab">
+                <ion-segment-button value="sets">
+                  <ion-label>Sets</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="info">
+                  <ion-label>Info</ion-label>
+                </ion-segment-button>
+              </ion-segment>
 
               <!-- Sets Tab -->
               <div v-if="selectedTab === 'sets'">
-                <WorkoutExerciseCard
+                <workout-exercise-card
                   :exercise="exercise"
-                  @add-set="$emit('add-set', currentExerciseIndex)"
-                  @remove-set="(setIndex) => $emit('remove-set', currentExerciseIndex, setIndex)"
-                  @update-set="handleSetUpdate"
-                  @timer-requested="$emit('timer-requested')"
+                  @add-set="() => addSet(currentExerciseIndex)"
+                  @remove-set="(setIndex) => removeSet(currentExerciseIndex, setIndex)"
+                  @update-set="(isComplete) => handleSetUpdate(isComplete)"
+                  @timer-requested="requestRestTimer"
                 />
               </div>
 
               <!-- Info Tab (Combined) -->
-              <div v-if="selectedTab === 'info'" class="info-container">
+              <div
+                v-if="selectedTab === 'info'"
+                class="info-container"
+              >
                 <!-- Description -->
                 <div class="detail-section">
                   <p class="description ion-no-margin">
@@ -195,14 +233,25 @@ const handleSetUpdate = (complete: boolean) => {
 
                 <!-- Muscles -->
                 <div
+                  v-if="exercise.exercise?.primaryMuscles?.length || exercise.exercise?.secondaryMuscles?.length"
                   class="detail-section"
-                  v-if="exercise.exercise?.primaryMuscles?.length || exercise.exercise?.secondaryMuscles?.length">
-                  <h3 class="detail-title">Target Muscles</h3>
+                >
+                  <h3 class="detail-title">
+                    Target Muscles
+                  </h3>
                   <div class="muscles-list">
-                    <span v-for="muscle in exercise.exercise?.primaryMuscles" :key="'p-'+muscle" class="muscle-tag primary">
+                    <span
+                      v-for="muscle in exercise.exercise?.primaryMuscles"
+                      :key="'p-'+muscle"
+                      class="muscle-tag primary"
+                    >
                       {{ muscle }}
                     </span>
-                    <span v-for="muscle in exercise.exercise?.secondaryMuscles" :key="'s-'+muscle" class="muscle-tag secondary">
+                    <span
+                      v-for="muscle in exercise.exercise?.secondaryMuscles"
+                      :key="'s-'+muscle"
+                      class="muscle-tag secondary"
+                    >
                       {{ muscle }}
                     </span>
                   </div>
@@ -210,42 +259,74 @@ const handleSetUpdate = (complete: boolean) => {
 
                 <!-- How To -->
                 <div class="detail-section">
-                  <h3 class="detail-title">How To</h3>
-                  <ol v-if="exercise.exercise?.howTo?.length" class="instruction-list">
-                    <li v-for="(step, idx) in exercise.exercise?.howTo" :key="idx">
-                        {{ step }}
+                  <h3 class="detail-title">
+                    How To
+                  </h3>
+                  <ol
+                    v-if="exercise.exercise?.howTo?.length"
+                    class="instruction-list"
+                  >
+                    <li
+                      v-for="(step, idx) in exercise.exercise?.howTo"
+                      :key="idx"
+                    >
+                      {{ step }}
                     </li>
                   </ol>
-                  <div v-else class="ion-text-center text-muted text-sm italic">
+                  <div
+                    v-else
+                    class="ion-text-center text-muted text-sm italic"
+                  >
                     No instructions available
                   </div>
                 </div>
 
                 <!-- Tips -->
                 <div class="detail-section">
-                  <h3 class="detail-title">Tips</h3>
-                  <ul v-if="exercise.exercise?.tips?.length" class="tips-list">
-                    <li v-for="(tip, idx) in exercise.exercise?.tips" :key="idx">
+                  <h3 class="detail-title">
+                    Tips
+                  </h3>
+                  <ul
+                    v-if="exercise.exercise?.tips?.length"
+                    class="tips-list"
+                  >
+                    <li
+                      v-for="(tip, idx) in exercise.exercise?.tips"
+                      :key="idx"
+                    >
                       {{ tip }}
                     </li>
                   </ul>
-                  <div v-else class="ion-text-center text-muted text-sm italic">
+                  <div
+                    v-else
+                    class="ion-text-center text-muted text-sm italic"
+                  >
                     No tips available
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </SwiperSlide>
-      </Swiper>
+        </swiper-slide>
+      </swiper>
 
       <!-- Bottom Actions Menu -->
       <div class="bottom-actions-menu">
-        <IonButton expand="block" fill="outline" @click="openExerciseActions">
-            <IonIcon slot="start" :icon="ellipsisHorizontalOutline" />
-            Options
-        </IonButton>
+        <ion-button
+          expand="block"
+          fill="outline"
+          @click="openExerciseActions"
+        >
+          <template #start>
+            <ion-icon 
+              :icon="ellipsisHorizontalOutline"
+            />
+          </template>
+          Options
+        </ion-button>
       </div>
+
+      <add-exercise-modal @add-exercise="handleAddExercise" />
     </div>
   </div>
 </template>

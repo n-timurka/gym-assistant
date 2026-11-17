@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { Exercise } from '@/types/firebase.types';
+import type { Exercise } from '@/types/firebase.types';
 import { IonItem, IonLabel, IonThumbnail } from '@ionic/vue';
 import ExerciseImage from './ExerciseImage.vue';
 import ExerciseCategoryLabel from './ExerciseCategoryLabel.vue';
@@ -21,17 +21,33 @@ const doNavigate = () => {
 </script>
 
 <template>
-  <IonItem button detail @click="doNavigate">
-    <IonThumbnail slot="start">
-      <ExerciseImage size="xs" :exercise-id="exercise.extId" />
-    </IonThumbnail>
+  <ion-item
+    button
+    detail
+    @click="doNavigate"
+  >
+    <template #start>
+      <ion-thumbnail>
+        <exercise-image
+          size="xs"
+          :exerciseId="exercise.extId"
+        />
+      </ion-thumbnail>
+    </template>
 
-    <IonLabel>
+    <ion-label>
       <h2>{{ exercise.name }}</h2>
       <div>
-        <ExerciseCategoryLabel v-if="displayCategory" :category="exercise.category" size="sm" />
-        <ExerciseTypeLabel :type="exercise.type" size="sm" />
+        <exercise-category-label
+          v-if="displayCategory"
+          :category="exercise.category"
+          size="sm"
+        />
+        <exercise-type-label
+          :type="exercise.type"
+          size="sm"
+        />
       </div>
-    </IonLabel>
-  </IonItem>
+    </ion-label>
+  </ion-item>
 </template>

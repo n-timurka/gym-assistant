@@ -2,27 +2,41 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/exercises"></ion-back-button>
-        </ion-buttons>
+        <template #start>
+          <ion-buttons>
+            <ion-back-button defaultHref="/tabs/exercises" />
+          </ion-buttons>
+        </template>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content :fullscreen="true" v-if="exercise">
+    <ion-content
+      v-if="exercise"
+      :fullscreen="true"
+    >
       <!-- Media Section -->
       <div class="media-container">
-        <div v-if="exercise.videoUrl" class="video-container">
+        <div
+          v-if="exercise.videoUrl"
+          class="video-container"
+        >
           <!-- Placeholder for video player -->
           <div class="media-placeholder">
-            <ion-icon :icon="playCircleOutline" size="large"></ion-icon>
+            <ion-icon
+              :icon="playCircleOutline"
+              size="large"
+            />
             <p>Video Preview</p>
           </div>
         </div>
-        <ExerciseImage :exercise-id="exercise.extId" size="lg" />
+        <exercise-image
+          :exerciseId="exercise.extId"
+          size="lg"
+        />
 
         <div class="badges">
-          <ExerciseCategoryLabel :category="exercise.category" />
-          <ExerciseTypeLabel :type="exercise.type" />
+          <exercise-category-label :category="exercise.category" />
+          <exercise-type-label :type="exercise.type" />
         </div>
       </div>
 
@@ -46,50 +60,71 @@
         </ion-segment>
 
         <!-- Tab Content -->
-        <div v-if="selectedTab === 'description'" class="tab-content">
+        <div
+          v-if="selectedTab === 'description'"
+          class="tab-content"
+        >
           <ion-card>
             <ion-card-content>
               <!-- Description Section -->
-              <div v-if="exercise.description" class="section ion-margin-bottom">
+              <div
+                v-if="exercise.description"
+                class="section ion-margin-bottom"
+              >
                 <h3>Description</h3>
                 <p>{{ exercise.description }}</p>
               </div>
 
               <!-- Muscles Section -->
-              <div v-if="(exercise.primaryMuscles && exercise.primaryMuscles.length) || (exercise.secondaryMuscles && exercise.secondaryMuscles.length)" class="section ion-margin-bottom">
+              <div
+                v-if="(exercise.primaryMuscles && exercise.primaryMuscles.length) || (exercise.secondaryMuscles && exercise.secondaryMuscles.length)"
+                class="section ion-margin-bottom"
+              >
                 <h3>Muscles</h3>
                 <div v-if="exercise.primaryMuscles && exercise.primaryMuscles.length">
-                    <p class="subtitle">
-                      Primary:
-                      <strong>
-                          {{ exercise.primaryMuscles.join(', ') }}
-                        </strong>
-                    </p>
+                  <p class="subtitle">
+                    Primary:
+                    <strong>
+                      {{ exercise.primaryMuscles.join(', ') }}
+                    </strong>
+                  </p>
                 </div>
-                <div v-if="exercise.secondaryMuscles && exercise.secondaryMuscles.length" class="ion-margin-top">
-                    <p class="subtitle">
-                      Secondary:
-                      <strong>
-                          {{ exercise.secondaryMuscles.join(', ') }}
-                        </strong>
-                    </p>
+                <div
+                  v-if="exercise.secondaryMuscles && exercise.secondaryMuscles.length"
+                  class="ion-margin-top"
+                >
+                  <p class="subtitle">
+                    Secondary:
+                    <strong>
+                      {{ exercise.secondaryMuscles.join(', ') }}
+                    </strong>
+                  </p>
                 </div>
               </div>
 
               <!-- How To Section -->
-              <div v-if="exercise.howTo && exercise.howTo.length" class="section">
+              <div
+                v-if="exercise.howTo && exercise.howTo.length"
+                class="section"
+              >
                 <h3>How To</h3>
                 <ol class="how-to-list">
-                    <li v-for="(step, index) in exercise.howTo" :key="index">
-                        {{ step }}
-                    </li>
+                  <li
+                    v-for="(step, index) in exercise.howTo"
+                    :key="index"
+                  >
+                    {{ step }}
+                  </li>
                 </ol>
               </div>
             </ion-card-content>
           </ion-card>
         </div>
 
-        <div v-if="selectedTab === 'progress'" class="tab-content">
+        <div
+          v-if="selectedTab === 'progress'"
+          class="tab-content"
+        >
           <!-- Current Weight Section -->
           <ion-card v-if="progressRecords.length > 0">
             <ion-card-header>
@@ -112,11 +147,19 @@
             </ion-card-header>
             <ion-card-content>
               <ion-list>
-                <ion-item v-for="record in progressRecords" :key="record.id" lines="full">
+                <ion-item
+                  v-for="record in progressRecords"
+                  :key="record.id"
+                  lines="full"
+                >
                   <ion-label>
                     <h3>{{ formatDate(record.date) }}</h3>
                   </ion-label>
-                  <ion-note slot="end" class="weight-value">{{ record.weight }} {{ isCardio ? 'min' : 'kg' }}</ion-note>
+                  <template #end>
+                    <ion-note class="weight-value">
+                      {{ record.weight }} {{ isCardio ? 'min' : 'kg' }}
+                    </ion-note>
+                  </template>
                 </ion-item>
               </ion-list>
             </ion-card-content>
@@ -125,7 +168,10 @@
           <!-- Empty State -->
           <ion-card v-if="progressRecords.length === 0 && !progressLoading">
             <ion-card-content class="ion-text-center">
-              <ion-icon :icon="trendingUpOutline" class="large-icon"></ion-icon>
+              <ion-icon
+                :icon="trendingUpOutline"
+                class="large-icon"
+              />
               <h3>No Progress Yet</h3>
               <p>Start tracking your progress by completing workouts with this exercise.</p>
             </ion-card-content>
@@ -134,26 +180,36 @@
           <!-- Loading State -->
           <ion-card v-if="progressLoading">
             <ion-card-content class="ion-text-center">
-              <ion-spinner></ion-spinner>
+              <ion-spinner />
               <p>Loading progress data...</p>
             </ion-card-content>
           </ion-card>
         </div>
 
-        <div v-if="selectedTab === 'similar'" class="tab-content">
-          <SimilarExercisesList :exercise="exercise" />
+        <div
+          v-if="selectedTab === 'similar'"
+          class="tab-content"
+        >
+          <similar-exercises-list :exercise="exercise" />
         </div>
-
       </div>
     </ion-content>
     
-    <ion-content v-else-if="loading" class="ion-padding ion-text-center">
-      <ion-spinner></ion-spinner>
+    <ion-content
+      v-else-if="loading"
+      class="ion-padding ion-text-center"
+    >
+      <ion-spinner />
     </ion-content>
     
-    <ion-content v-else class="ion-padding ion-text-center">
+    <ion-content
+      v-else
+      class="ion-padding ion-text-center"
+    >
       <p>Exercise not found</p>
-      <ion-button router-link="/tabs/exercises">Go Back</ion-button>
+      <ion-button routerLink="/tabs/exercises">
+        Go Back
+      </ion-button>
     </ion-content>
   </ion-page>
 </template>

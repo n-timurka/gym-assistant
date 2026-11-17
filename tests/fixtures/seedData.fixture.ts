@@ -2,7 +2,7 @@
 import { exercises } from '../../data/exercises';
 import { programs } from '../../data/programs';
 import { users } from '../../data/users';
-import { Exercise, Program, AuthUser, PersonalData } from '../../src/types/firebase.types';
+import type { Exercise, Program, AuthUser, PersonalData } from '@/types/firebase.types';
 
 /**
  * Standard test user extracted from users seed data

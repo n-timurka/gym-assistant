@@ -1,4 +1,5 @@
-import { ref, Ref, computed } from "vue";
+import type { Ref} from "vue";
+import { ref, computed } from "vue";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -78,7 +79,7 @@ export function useAuth() {
       }
 
       return { success: true };
-    } catch (err: any) {
+    } catch (err) {
       const authError = handleAuthError(err);
       error.value = authError.message;
       return { success: false, error: authError };
@@ -100,7 +101,7 @@ export function useAuth() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       return { success: true };
-    } catch (err: any) {
+    } catch (err) {
       const authError = handleAuthError(err);
       error.value = authError.message;
       return { success: false, error: authError };
@@ -119,7 +120,7 @@ export function useAuth() {
     try {
       await signOut(auth);
       return { success: true };
-    } catch (err: any) {
+    } catch (err) {
       const authError = handleAuthError(err);
       error.value = authError.message;
       return { success: false, error: authError };
@@ -140,7 +141,7 @@ export function useAuth() {
     try {
       await sendPasswordResetEmail(auth, email);
       return { success: true };
-    } catch (err: any) {
+    } catch (err) {
       const authError = handleAuthError(err);
       error.value = authError.message;
       return { success: false, error: authError };
@@ -176,8 +177,8 @@ export function useAuth() {
 /**
  * Handle Firebase Auth errors and return user-friendly messages
  */
-function handleAuthError(err: any): AuthError {
-  const code = err.code || "unknown";
+function handleAuthError(err: unknown): AuthError {
+  const code = (err as { code?: string })?.code || "unknown";
   let message = "An error occurred. Please try again.";
 
   switch (code) {
@@ -209,7 +210,7 @@ function handleAuthError(err: any): AuthError {
       message = "Too many failed attempts. Please try again later.";
       break;
     default:
-      message = err.message || message;
+      message = (err as { message?: string })?.message || message;
   }
 
   return {

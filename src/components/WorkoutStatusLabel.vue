@@ -23,7 +23,7 @@ const statusColor = computed(() => ({
 </script>
 
 <template>
-  <IonBadge :color="statusColor">
+  <ion-badge :color="statusColor">
     {{ statusText }}
-  </IonBadge>
+  </ion-badge>
 </template>

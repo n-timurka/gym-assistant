@@ -8,7 +8,7 @@ export const users: (Omit<UserProfile, "id"> & { extId: string })[] = [
         goals: ["Build strength", "Improve consistency"],
         preferences: {
             units: "metric",
-            workoutsPerWeek: 3,
+            workoutsPerWeek: '3',
         },
     },
 ];

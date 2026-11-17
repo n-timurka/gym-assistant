@@ -8,15 +8,18 @@ const { authInitialized } = useAuth();
 </script>
 
 <template>
-  <IonApp>
-    <div v-if="!authInitialized" class="auth-loading">
-      <IonSpinner name="crescent" />
+  <ion-app>
+    <div
+      v-if="!authInitialized"
+      class="auth-loading"
+    >
+      <ion-spinner name="crescent" />
       <p>Loading...</p>
     </div>
-    <IonRouterOutlet v-else />
+    <ion-router-outlet v-else />
     
-    <RestTimerModal />
-  </IonApp>
+    <rest-timer-modal />
+  </ion-app>
 </template>
 
 <style scoped>

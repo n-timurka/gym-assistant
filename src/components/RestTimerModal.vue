@@ -7,17 +7,30 @@ const { formattedTime, stopTimer, isRunning } = useRestTimer();
 </script>
 
 <template>
-  <Transition>
-    <section v-if="isRunning" class="timer-overlay">
+  <transition>
+    <section
+      v-if="isRunning"
+      class="timer-overlay"
+    >
       <div class="timer-content">
-        <div class="timer-label">Rest Time</div>
-        <div class="timer-value">{{ formattedTime }}</div>
+        <div class="timer-label">
+          Rest Time
+        </div>
+        <div class="timer-value">
+          {{ formattedTime }}
+        </div>
       </div>
-      <IonButton fill="clear" color="light" @click="stopTimer">
-        <IonIcon :icon="closeOutline" slot="icon-only" />
-      </IonButton>
+      <ion-button
+        fill="clear"
+        color="light"
+        @click="stopTimer"
+      >
+        <template #icon-only>
+          <ion-icon :icon="closeOutline" />
+        </template>
+      </ion-button>
     </section>
-  </Transition>
+  </transition>
 </template>
 
 <style scoped>
