@@ -1,15 +1,25 @@
 <template>
   <ion-header>
     <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-button @click="cancel">Cancel</ion-button>
-      </ion-buttons>
+      <template #start>
+        <ion-buttons>
+          <ion-button @click="cancel">
+            Cancel
+          </ion-button>
+        </ion-buttons>
+      </template>
       <ion-title>{{ program ? 'Edit' : 'Create' }} Program</ion-title>
-      <ion-buttons slot="end">
-        <ion-button :strong="true" :disabled="!isValid" @click="confirm">
-          {{ program ? 'Update' : 'Create' }}
-        </ion-button>
-      </ion-buttons>
+      <template #end>
+        <ion-buttons>
+          <ion-button
+            :strong="true"
+            :disabled="!isValid"
+            @click="confirm"
+          >
+            {{ program ? 'Update' : 'Create' }}
+          </ion-button>
+        </ion-buttons>
+      </template>
     </ion-toolbar>
   </ion-header>
 
@@ -20,12 +30,24 @@
           <ion-label>Basic Information</ion-label>
         </ion-item-divider>
         <ion-item>
-          <ion-label position="stacked">Program Name</ion-label>
-          <ion-input v-model="formData.name" placeholder="e.g. 5x5 Stronglifts" required></ion-input>
+          <ion-label position="stacked">
+            Program Name
+          </ion-label>
+          <ion-input
+            v-model="formData.name"
+            placeholder="e.g. 5x5 Stronglifts"
+            required
+          />
         </ion-item>
         <ion-item>
-          <ion-label position="stacked">Description</ion-label>
-          <ion-textarea v-model="formData.description" placeholder="Short description of the program" :rows="3"></ion-textarea>
+          <ion-label position="stacked">
+            Description
+          </ion-label>
+          <ion-textarea
+            v-model="formData.description"
+            placeholder="Short description of the program"
+            :rows="3"
+          />
         </ion-item>
       </ion-item-group>
 
@@ -34,20 +56,37 @@
           <ion-label>Settings</ion-label>
         </ion-item-divider>
         <ion-item>
-          <ion-label position="stacked">Workouts per Week</ion-label>
-          <ion-input type="number" v-model.number="formData.workoutsPerWeek" min="1" max="7"></ion-input>
+          <ion-label position="stacked">
+            Workouts per Week
+          </ion-label>
+          <ion-input
+            v-model.number="formData.workoutsPerWeek"
+            type="number"
+            min="1"
+            max="7"
+          />
         </ion-item>
         <ion-item>
-          <ion-label position="stacked">Difficulty Level</ion-label>
+          <ion-label position="stacked">
+            Difficulty Level
+          </ion-label>
           <ion-select v-model="formData.difficultyLevel">
-            <ion-select-option value="Beginner">Beginner</ion-select-option>
-            <ion-select-option value="Intermediate">Intermediate</ion-select-option>
-            <ion-select-option value="Advanced">Advanced</ion-select-option>
+            <ion-select-option value="Beginner">
+              Beginner
+            </ion-select-option>
+            <ion-select-option value="Intermediate">
+              Intermediate
+            </ion-select-option>
+            <ion-select-option value="Advanced">
+              Advanced
+            </ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>
           <ion-label>Active Program</ion-label>
-          <ion-toggle v-model="formData.isActive" slot="end"></ion-toggle>
+          <template #end>
+            <ion-toggle v-model="formData.isActive" />
+          </template>
         </ion-item>
       </ion-item-group>
     </ion-list>

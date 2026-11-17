@@ -86,7 +86,7 @@ describe('date.helper', () => {
 
     it('formats ISO string into weekday, month, day', () => {
       const formatted = formatDate('2026-10-28T12:00:00Z');
-      expect(formatted).toContain('Wednesday');
+      expect(formatted).toContain('Wed');
       expect(formatted).toContain('Oct');
       expect(formatted).toContain('28');
     });

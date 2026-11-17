@@ -106,11 +106,17 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <AppLayout title="Workouts">
-    <WeekNavigation v-model="currentWeekStart" />
+  <app-layout title="Workouts">
+    <week-navigation v-model="currentWeekStart" />
 
-    <WeekDayNavigation v-model="selectedDate" :workouts="workouts" />
+    <week-day-navigation
+      v-model="selectedDate"
+      :workouts="workouts"
+    />
 
-    <WorkoutCard :date="selectedDate" :workout="selectedDateWorkout" />
-  </AppLayout>
+    <workout-card
+      :date="selectedDate"
+      :workout="selectedDateWorkout"
+    />
+  </app-layout>
 </template>

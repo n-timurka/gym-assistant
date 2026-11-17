@@ -2,7 +2,8 @@
 import { useAuth } from '@/composables/useAuth';
 import { useFirebase } from '@/composables/useFirebase';
 import { calculateDuration, formatDate } from '@/helpers/date.helper';
-import { Collections, Workout, WorkoutStatus } from '@/types/firebase.types';
+import type { Workout} from '@/types/firebase.types';
+import { Collections, WorkoutStatus } from '@/types/firebase.types';
 import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonIcon, IonItem, IonList, IonSpinner } from '@ionic/vue';
 import { addOutline, trashOutline } from 'ionicons/icons';
 import WorkoutStatusLabel from '@/components/WorkoutStatusLabel.vue';
@@ -69,63 +70,79 @@ const deleteWorkout = async () => {
 <template>
   <div class="workouts-list-container">
     <!-- Loading Spinner -->
-    <div v-if="loading" class="ion-text-center ion-padding">
-      <IonSpinner />
+    <div
+      v-if="loading"
+      class="ion-text-center ion-padding"
+    >
+      <ion-spinner />
     </div>
 
     <div v-else>
       <!-- No workout state -->
-      <div class="empty-state" v-if="!workout">
-        <IonIcon :icon="addOutline" />
+      <div
+        v-if="!workout"
+        class="empty-state"
+      >
+        <ion-icon :icon="addOutline" />
         <h3>No Workout</h3>
         <p>Nothing planned for {{ formatDate(date) }}</p>
-        <IonButton @click="addWorkout">
+        <ion-button @click="addWorkout">
           Create a workout
-        </IonButton>
+        </ion-button>
       </div>
 
-      <IonCard v-else>
-        <IonCardHeader>
-          <IonCardTitle class="ion-text-center">
+      <ion-card v-else>
+        <ion-card-header>
+          <ion-card-title class="ion-text-center">
             {{ formatDate(date) }}
-          </IonCardTitle>
+          </ion-card-title>
           <div class="ion-margin-bottom ion-display-flex ion-justify-content-between ion-align-content-center">
-            <WorkoutStatusLabel :status="workout.status" />
+            <workout-status-label :status="workout.status" />
 
-            <IonCardSubtitle v-if="workoutDuration">
+            <ion-card-subtitle v-if="workoutDuration">
               {{ workoutDuration }} minutes
-            </IonCardSubtitle>
+            </ion-card-subtitle>
           </div>
-        </IonCardHeader>
+        </ion-card-header>
 
-        <IonCardContent>
-          <IonButton 
+        <ion-card-content>
+          <ion-button 
             expand="block"
             fill="outline"
-            :router-link="`/workouts/${workout.id}`"
+            :routerLink="`/workouts/${workout.id}`"
           >
             View Details
-          </IonButton>
+          </ion-button>
 
           <!-- Exercises List -->
-          <IonList v-if="workoutExercises" class="ion-padding-vertical">
-            <IonItem v-for="exercise in workoutExercises" :key="exercise.id">
+          <ion-list
+            v-if="workoutExercises"
+            class="ion-padding-vertical"
+          >
+            <ion-item
+              v-for="exercise in workoutExercises"
+              :key="exercise.id"
+            >
               {{ exercise.name }}
-              <ExerciseCategoryLabel slot="end" :category="exercise.category" />
-            </IonItem>
-          </IonList>
+              <template #end>
+                <exercise-category-label :category="exercise.category" />
+              </template>
+            </ion-item>
+          </ion-list>
 
-          <IonButton
+          <ion-button
             expand="block"
             color="danger" 
             fill="clear" 
             @click="deleteWorkout"
           >
-            <IonIcon slot="start" :icon="trashOutline" />
+            <template #start>
+              <ion-icon :icon="trashOutline" />
+            </template>
             Delete Workout
-          </IonButton>
-        </IonCardContent>
-      </IonCard>
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
     </div>
   </div>
 </template>

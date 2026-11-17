@@ -150,112 +150,199 @@ const menuItems = computed(() => [
 </script>
 
 <template>
-  <AppLayout title="Account">
-    <IonCard class="account-card">
-      <IonButton
+  <app-layout title="Account">
+    <ion-card class="account-card">
+      <ion-button
         class="edit-profile-button"
         fill="clear"
         aria-label="Edit personal data"
-        @click="openEditModal">
+        @click="openEditModal"
+      >
         Edit
-      </IonButton>
-      <IonCardHeader class="ion-display-flex ion-align-items-center ion-flex-column">
-        <IonAvatar>
-          <img alt="" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
-        </IonAvatar>
-        <IonCardTitle class="ion-margin-vertical">
+      </ion-button>
+      <ion-card-header class="ion-display-flex ion-align-items-center ion-flex-column">
+        <ion-avatar>
+          <img
+            alt=""
+            src="https://ionicframework.com/docs/img/demos/avatar.svg"
+          >
+        </ion-avatar>
+        <ion-card-title class="ion-margin-vertical">
           {{ personalData?.Name || currentUser?.displayName || 'Your account' }}
-        </IonCardTitle>
-      </IonCardHeader>
-      <IonCardContent>
-        <div v-if="isLoadingProfile" class="ion-text-center ion-padding">
-          <IonSpinner aria-label="Loading personal data" />
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div
+          v-if="isLoadingProfile"
+          class="ion-text-center ion-padding"
+        >
+          <ion-spinner aria-label="Loading personal data" />
         </div>
-        <IonList v-else lines="full" class="personal-data-list">
-          <IonItem>
-            <IonLabel>Birth date</IonLabel>
-            <IonNote slot="end">{{ personalData?.birthDate || 'Not set' }}</IonNote>
-          </IonItem>
-          <IonItem>
-            <IonLabel>Height</IonLabel>
-            <IonNote slot="end">{{ personalData?.height ? `${personalData.height} cm` : 'Not set' }}</IonNote>
-          </IonItem>
-          <IonItem>
-            <IonLabel>Weight</IonLabel>
-            <IonNote slot="end">{{ personalData?.weight ? `${personalData.weight} kg` : 'Not set' }}</IonNote>
-          </IonItem>
-          <IonItem>
-            <IonLabel>BMI</IonLabel>
-            <IonNote slot="end">{{ personalData?.bmi || 'Not set' }}</IonNote>
-          </IonItem>
-          <IonItem>
-            <IonLabel>Body composition</IonLabel>
-            <IonNote slot="end">{{ personalData?.bodyComposition || 'Not set' }}</IonNote>
-          </IonItem>
-          <IonItemDivider>Weight history</IonItemDivider>
-          <IonItem v-if="!personalData?.weightHistory?.length">
-            <IonNote>No weight entries yet.</IonNote>
-          </IonItem>
-          <IonItem v-for="entry in personalData?.weightHistory || []" :key="entry.date">
-            <IonLabel>{{ new Date(entry.date).toLocaleDateString() }}</IonLabel>
-            <IonNote slot="end">{{ entry.weight }} kg</IonNote>
-          </IonItem>
-        </IonList>
-        <IonList lines="none">
-          <IonItem
+        <ion-list
+          v-else
+          lines="full"
+          class="personal-data-list"
+        >
+          <ion-item>
+            <ion-label>Birth date</ion-label>
+            <template #end>
+              <ion-note>{{ personalData?.birthDate || 'Not set' }}</ion-note>
+            </template>
+          </ion-item>
+          <ion-item>
+            <ion-label>Height</ion-label>
+            <template #end>
+              <ion-note>{{ personalData?.height ? `${personalData.height} cm` : 'Not set' }}</ion-note>
+            </template>
+          </ion-item>
+          <ion-item>
+            <ion-label>Weight</ion-label>
+            <template #end>
+              <ion-note>{{ personalData?.weight ? `${personalData.weight} kg` : 'Not set' }}</ion-note>
+            </template>
+          </ion-item>
+          <ion-item>
+            <ion-label>BMI</ion-label>
+            <template #end>
+              <ion-note>{{ personalData?.bmi || 'Not set' }}</ion-note>
+            </template>
+          </ion-item>
+          <ion-item>
+            <ion-label>Body composition</ion-label>
+            <template #end>
+              <ion-note>{{ personalData?.bodyComposition || 'Not set' }}</ion-note>
+            </template>
+          </ion-item>
+          <ion-item-divider>Weight history</ion-item-divider>
+          <ion-item v-if="!personalData?.weightHistory?.length">
+            <ion-note>No weight entries yet.</ion-note>
+          </ion-item>
+          <ion-item
+            v-for="entry in personalData?.weightHistory || []"
+            :key="entry.date"
+          >
+            <ion-label>{{ new Date(entry.date).toLocaleDateString() }}</ion-label>
+            <template #end>
+              <ion-note>{{ entry.weight }} kg</ion-note>
+            </template>
+          </ion-item>
+        </ion-list>
+        <ion-list lines="none">
+          <ion-item
             v-for="item in menuItems"
             :key="item.label"
             :button="true"
-            @click="item.action">
-            <IonIcon slot="start" :icon="item.icon" />
-            <IonLabel>{{ item.label }}</IonLabel>
-          </IonItem>
-          <IonItem>
-            <IonNote class="ion-text-center">Version: {{ appVersion }}</IonNote>
-          </IonItem>
-        </IonList>
-      </IonCardContent>
-    </IonCard>
+            @click="item.action"
+          >
+            <template #start>
+              <ion-icon :icon="item.icon" />
+            </template>
+            <ion-label>{{ item.label }}</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-note class="ion-text-center">
+              Version: {{ appVersion }}
+            </ion-note>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
 
-    <IonModal :is-open="isEditOpen" @did-dismiss="isEditOpen = false">
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>Personal data</IonTitle>
-          <IonButtons slot="start">
-            <IonButton :disabled="isSaving" @click="isEditOpen = false">Cancel</IonButton>
-          </IonButtons>
-          <IonButtons slot="end">
-            <IonButton :strong="true" :disabled="isSaving" @click="savePersonalData">
-              {{ isSaving ? 'Saving…' : 'Save' }}
-            </IonButton>
-          </IonButtons>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent class="ion-padding">
-        <IonList>
-          <IonItem>
-            <IonInput v-model="form.Name" label="Name" label-placement="stacked" placeholder="Your name" />
-          </IonItem>
-          <IonItem>
-            <IonInput v-model="form.birthDate" type="date" label="Birth date" label-placement="stacked" />
-          </IonItem>
-          <IonItem>
-            <IonInput v-model.number="form.height" type="number" min="1" label="Height (cm)" label-placement="stacked" />
-          </IonItem>
-          <IonItem>
-            <IonInput v-model.number="form.weight" type="number" min="1" step="0.1" label="Weight (kg)" label-placement="stacked" />
-          </IonItem>
-          <IonItem>
-            <IonInput :model-value="bmi?.toString() || ''" readonly label="BMI" label-placement="stacked" placeholder="Calculated from height and weight" />
-          </IonItem>
-          <IonItem>
-            <IonInput v-model="form.bodyComposition" label="Body composition" label-placement="stacked" placeholder="e.g. 18% body fat" />
-          </IonItem>
-        </IonList>
-        <IonNote v-if="saveError" color="danger" class="ion-padding-top">{{ saveError }}</IonNote>
-      </IonContent>
-    </IonModal>
-  </AppLayout>
+    <ion-modal
+      :isOpen="isEditOpen"
+      @did-dismiss="isEditOpen = false"
+    >
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Personal data</ion-title>
+          <template #start>
+            <ion-buttons>
+              <ion-button
+                :disabled="isSaving"
+                @click="isEditOpen = false"
+              >
+                Cancel
+              </ion-button>
+            </ion-buttons>
+          </template>
+          <template #end>
+            <ion-buttons>
+              <ion-button
+                :strong="true"
+                :disabled="isSaving"
+                @click="savePersonalData"
+              >
+                {{ isSaving ? 'Saving…' : 'Save' }}
+              </ion-button>
+            </ion-buttons>
+          </template>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-list>
+          <ion-item>
+            <ion-input
+              v-model="form.Name"
+              label="Name"
+              labelPlacement="stacked"
+              placeholder="Your name"
+            />
+          </ion-item>
+          <ion-item>
+            <ion-input
+              v-model="form.birthDate"
+              type="date"
+              label="Birth date"
+              labelPlacement="stacked"
+            />
+          </ion-item>
+          <ion-item>
+            <ion-input
+              v-model.number="form.height"
+              type="number"
+              min="1"
+              label="Height (cm)"
+              labelPlacement="stacked"
+            />
+          </ion-item>
+          <ion-item>
+            <ion-input
+              v-model.number="form.weight"
+              type="number"
+              min="1"
+              step="0.1"
+              label="Weight (kg)"
+              labelPlacement="stacked"
+            />
+          </ion-item>
+          <ion-item>
+            <ion-input
+              :modelValue="bmi?.toString() || ''"
+              readonly
+              label="BMI"
+              labelPlacement="stacked"
+              placeholder="Calculated from height and weight"
+            />
+          </ion-item>
+          <ion-item>
+            <ion-input
+              v-model="form.bodyComposition"
+              label="Body composition"
+              labelPlacement="stacked"
+              placeholder="e.g. 18% body fat"
+            />
+          </ion-item>
+        </ion-list>
+        <ion-note
+          v-if="saveError"
+          color="danger"
+          class="ion-padding-top"
+        >
+          {{ saveError }}
+        </ion-note>
+      </ion-content>
+    </ion-modal>
+  </app-layout>
 </template>
 
 <style scoped>

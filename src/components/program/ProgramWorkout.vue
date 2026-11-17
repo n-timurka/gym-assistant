@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ProgramWorkoutExercise } from '@/types/firebase.types';
+import type { ProgramWorkoutExercise } from '@/types/firebase.types';
 import {
   IonAccordion,
   IonBadge,
@@ -29,47 +29,88 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <IonAccordion :value="`workout-${index}`">
-    <IonItem slot="header" color="light">
-      <IonBadge slot="start" color="medium">{{ exercises.length }}</IonBadge>
-      Workout {{ index + 1 }}
-    </IonItem>
+  <ion-accordion :value="`workout-${index}`">
+    <template #header>
+      <ion-item color="light">
+        <template #start>
+          <ion-badge 
+            color="medium"
+          >
+            {{ exercises.length }}
+          </ion-badge>
+        </template>
+        Workout {{ index + 1 }}
+      </ion-item>
+    </template>
 
-    <div slot="content">
-      <IonList lines="full">
-        <IonListHeader class="ion-no-margin ion-margin-bottom">
-          <IonLabel>Exercises</IonLabel>
-          <IonButton fill="outline" @click="emit('add-exercise', index)">
-            <IonIcon slot="start" :icon="addOutline" />
-            Add
-          </IonButton>
-        </IonListHeader>
-        <IonItem v-if="exercises.length === 0" class="ion-text-center">
-          <IonNote>
-            No exercises in this workout...
-          </IonNote>
-        </IonItem>
-        <IonItemSliding v-for="(exercise, exerciseIndex) in exercises" :key="exercise.exerciseId">
-          <IonItem v-if="exercise.exercise">
-            <IonLabel>{{ exercise.exercise.name }}</IonLabel>
-            <ExerciseCategoryLabel :category="exercise.exercise.category" size="sm" slot="end" />
-          </IonItem>
-          <IonItemOptions slot="end">
-            <IonItemOption color="danger" @click="emit('delete-exercise', index, exerciseIndex)">
-              <IonIcon :icon="trash" />
-            </IonItemOption>
-          </IonItemOptions>
-        </IonItemSliding>
-      </IonList>
+    <template #content>
+      <div>
+        <ion-list lines="full">
+          <ion-list-header class="ion-no-margin ion-margin-bottom">
+            <ion-label>Exercises</ion-label>
+            <ion-button
+              fill="outline"
+              @click="emit('add-exercise', index)"
+            >
+              <template #start>
+                <ion-icon 
+                  :icon="addOutline"
+                />
+              </template>
+              Add
+            </ion-button>
+          </ion-list-header>
+          <ion-item
+            v-if="exercises.length === 0"
+            class="ion-text-center"
+          >
+            <ion-note>
+              No exercises in this workout...
+            </ion-note>
+          </ion-item>
+          <ion-item-sliding
+            v-for="(exercise, exerciseIndex) in exercises"
+            :key="exercise.exerciseId"
+          >
+            <ion-item v-if="exercise.exercise">
+              <ion-label>{{ exercise.exercise.name }}</ion-label>
+              <template #end>
+                <exercise-category-label
+                  :category="exercise.exercise.category"
+                  size="sm"
+                />
+              </template>
+            </ion-item>
+            <template #end>
+              <ion-item-options>
+                <ion-item-option
+                  color="danger"
+                  @click="emit('delete-exercise', index, exerciseIndex)"
+                >
+                  <ion-icon :icon="trash" />
+                </ion-item-option>
+              </ion-item-options>
+            </template>
+          </ion-item-sliding>
+        </ion-list>
 
-      <div class="ion-display-flex ion-justify-content-center ion-margin-vertical">
-        <IonButton color="danger" size="small" @click="emit('delete-workout', index)">
-          <IonIcon slot="start" :icon="trashOutline" />
-          Delete
-        </IonButton>
+        <div class="ion-display-flex ion-justify-content-center ion-margin-vertical">
+          <ion-button
+            color="danger"
+            size="small"
+            @click="emit('delete-workout', index)"
+          >
+            <template #start>
+              <ion-icon 
+                :icon="trashOutline"
+              />
+            </template>
+            Delete
+          </ion-button>
+        </div>
       </div>
-    </div>
-  </IonAccordion>
+    </template>
+  </ion-accordion>
 </template>
 
 <style scoped>

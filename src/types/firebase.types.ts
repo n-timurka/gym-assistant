@@ -101,7 +101,7 @@ export interface UserProfile extends FirestoreDocument {
   email: string;
   photoURL?: string;
   goals?: string[];
-  preferences?: Record<string, any>;
+  preferences?: Record<string, string>;
 }
 
 export interface WeightHistoryEntry {
@@ -182,6 +182,6 @@ export interface QueryOptions {
   where?: {
     field: string;
     operator: "==" | "!=" | "<" | "<=" | ">" | ">=" | "in" | "array-contains";
-    value: any;
+    value: unknown;
   }[];
 }

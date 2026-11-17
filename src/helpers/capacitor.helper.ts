@@ -44,7 +44,7 @@ export const getCachedImageSrc = async (
     }
 
     return fileSrc;
-  } catch (e) {
+  } catch {
     return null;
   }
 };
@@ -130,7 +130,7 @@ export async function clearExerciseCache() {
       recursive: true,
     });
     console.log("Cache cleared");
-  } catch (e) {
+  } catch {
     // Directory might not exist
   }
 }

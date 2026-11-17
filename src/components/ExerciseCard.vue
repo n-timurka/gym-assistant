@@ -1,5 +1,9 @@
 <template>
-  <ion-card class="exercise-card" button :router-link="'/exercises/' + exercise.id">
+  <ion-card
+    class="exercise-card"
+    button
+    :routerLink="'/exercises/' + exercise.id"
+  >
     <ion-card-header>
       <div class="exercise-header">
         <ion-card-title>{{ exercise.name }}</ion-card-title>

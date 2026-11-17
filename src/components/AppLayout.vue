@@ -10,27 +10,32 @@ const { loading = false, backRoute, noPadding = false } = defineProps<{
 </script>
 
 <template>
-  <IonPage>
-    <IonHeader>
-      <IonToolbar>
-        <IonButtons v-if="backRoute" slot="start">
-          <IonBackButton :default-href="backRoute" />
-        </IonButtons>
-        <IonTitle>{{ title }}</IonTitle>
-      </IonToolbar>
-    </IonHeader>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <template #start>
+          <ion-buttons v-if="backRoute">
+            <ion-back-button :defaultHref="backRoute" />
+          </ion-buttons>
+        </template>
+        <ion-title>{{ title }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
 
-    <IonContent :fullscreen="true">
+    <ion-content :fullscreen="true">
       <div :class="!noPadding && 'ion-padding'">
         <!-- Loading State -->
-        <div v-if="loading" class="ion-text-center ion-padding">
-          <IonSpinner />
+        <div
+          v-if="loading"
+          class="ion-text-center ion-padding"
+        >
+          <ion-spinner />
         </div>
 
         <slot />
       </div>
-    </IonContent>
+    </ion-content>
 
     <slot name="fab" />
-  </IonPage>
+  </ion-page>
 </template>

@@ -1,28 +1,54 @@
 <template>
   <ion-page>
     <ion-tabs>
-      <ion-router-outlet></ion-router-outlet>
-      <ion-tab-bar slot="bottom">
-        <ion-tab-button tab="workouts" href="/tabs/workouts">
-          <ion-icon aria-hidden="true" :icon="barbell" />
-          <ion-label>Workouts</ion-label>
-        </ion-tab-button>
+      <ion-router-outlet />
+      <template #bottom>
+        <ion-tab-bar>
+          <ion-tab-button
+            tab="workouts"
+            href="/tabs/workouts"
+          >
+            <ion-icon
+              aria-hidden="true"
+              :icon="barbell"
+            />
+            <ion-label>Workouts</ion-label>
+          </ion-tab-button>
 
-        <ion-tab-button tab="exercises" href="/tabs/exercises">
-          <ion-icon aria-hidden="true" :icon="fitness" />
-          <ion-label>Exercises</ion-label>
-        </ion-tab-button>
+          <ion-tab-button
+            tab="exercises"
+            href="/tabs/exercises"
+          >
+            <ion-icon
+              aria-hidden="true"
+              :icon="fitness"
+            />
+            <ion-label>Exercises</ion-label>
+          </ion-tab-button>
 
-        <ion-tab-button tab="programs" href="/tabs/programs">
-          <ion-icon aria-hidden="true" :icon="list" />
-          <ion-label>Programs</ion-label>
-        </ion-tab-button>
+          <ion-tab-button
+            tab="programs"
+            href="/tabs/programs"
+          >
+            <ion-icon
+              aria-hidden="true"
+              :icon="list"
+            />
+            <ion-label>Programs</ion-label>
+          </ion-tab-button>
 
-        <ion-tab-button tab="account" href="/tabs/account">
-          <ion-icon aria-hidden="true" :icon="person" />
-          <ion-label>Account</ion-label>
-        </ion-tab-button>
-      </ion-tab-bar>
+          <ion-tab-button
+            tab="account"
+            href="/tabs/account"
+          >
+            <ion-icon
+              aria-hidden="true"
+              :icon="person"
+            />
+            <ion-label>Account</ion-label>
+          </ion-tab-button>
+        </ion-tab-bar>
+      </template>
     </ion-tabs>
   </ion-page>
 </template>

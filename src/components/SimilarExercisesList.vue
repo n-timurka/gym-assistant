@@ -64,16 +64,29 @@ watch(
 </script>
 
 <template>
-  <div v-if="loading" class="ion-text-center ion-padding">
-    <IonSpinner />
+  <div
+    v-if="loading"
+    class="ion-text-center ion-padding"
+  >
+    <ion-spinner />
   </div>
-  <IonList v-else-if="exercises.length > 0" lines="full">
-    <ExerciseListItem v-for="ex in exercises" :key="ex.id" :exercise="ex" />
-  </IonList>
-  <IonCard v-else>
-    <IonCardContent class="ion-text-center">
-      <IonIcon :icon="trendingUpOutline" size="lg"></IonIcon>
+  <ion-list
+    v-else-if="exercises.length > 0"
+    lines="full"
+  >
+    <exercise-list-item
+      v-for="ex in exercises"
+      :key="ex.id"
+      :exercise="ex"
+    />
+  </ion-list>
+  <ion-card v-else>
+    <ion-card-content class="ion-text-center">
+      <ion-icon
+        :icon="trendingUpOutline"
+        size="lg"
+      />
       <p>No similar exercises found.</p>
-    </IonCardContent>
-  </IonCard>
+    </ion-card-content>
+  </ion-card>
 </template>
