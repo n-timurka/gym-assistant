@@ -49,6 +49,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Use e2e env file
+        run: cp .env.e2e .env.local
       - uses: cypress-io/github-action@v6
         with:
           component: true
