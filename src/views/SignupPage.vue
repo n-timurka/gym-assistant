@@ -1,125 +1,183 @@
 <template>
   <ion-page>
-    <ion-content :fullscreen="true" class="ion-padding">
+    <ion-content
+      :fullscreen="true"
+      class="ion-padding"
+    >
       <div class="signup-container">
         <!-- Logo/Header -->
         <div class="header-section">
-          <ion-icon :icon="barbellOutline" class="logo-icon"></ion-icon>
-          <h1 class="app-title">Gym Assistant</h1>
-          <p class="app-subtitle">Start your fitness journey</p>
+          <ion-icon
+            :icon="barbellOutline"
+            class="logo-icon"
+          />
+          <h1 class="app-title">
+            Gym Assistant
+          </h1>
+          <p class="app-subtitle">
+            Start your fitness journey
+          </p>
         </div>
 
         <!-- Signup Form -->
         <ion-card class="auth-card">
           <ion-card-content>
-            <h2 class="form-title">Create Account</h2>
-            <p class="form-subtitle">Sign up to get started</p>
+            <h2 class="form-title">
+              Create Account
+            </h2>
+            <p class="form-subtitle">
+              Sign up to get started
+            </p>
 
             <!-- Error Alert -->
-            <ion-item v-if="authError" lines="none" class="error-item">
+            <ion-item
+              v-if="authError"
+              lines="none"
+              class="error-item"
+            >
               <ion-label class="error-message">
-                <ion-icon :icon="alertCircleOutline" slot="start"></ion-icon>
+                <template #start>
+                  <ion-icon :icon="alertCircleOutline" />
+                </template>
                 {{ authError }}
               </ion-label>
             </ion-item>
 
             <!-- Display Name Input -->
             <ion-item class="input-item">
-              <ion-icon :icon="personOutline" slot="start"></ion-icon>
+              <template #start>
+                <ion-icon :icon="personOutline" />
+              </template>
               <ion-input
                 v-model="formData.displayName"
                 type="text"
+                name="name"
                 label="Name (Optional)"
-                label-placement="floating"
+                labelPlacement="floating"
                 placeholder="Your name"
                 :disabled="authLoading"
-              ></ion-input>
+              />
             </ion-item>
 
             <!-- Email Input -->
-            <ion-item class="input-item" :class="{ 'ion-invalid': emailError && emailTouched }">
-              <ion-icon :icon="mailOutline" slot="start"></ion-icon>
+            <ion-item
+              class="input-item"
+              :class="{ 'ion-invalid': emailError && emailTouched }"
+            >
+              <template #start>
+                <ion-icon :icon="mailOutline" />
+              </template>
               <ion-input
                 v-model="formData.email"
                 type="email"
                 label="Email"
-                label-placement="floating"
+                name="email"
+                labelPlacement="floating"
                 placeholder="your@email.com"
-                @ion-blur="emailTouched = true"
                 :disabled="authLoading"
-              ></ion-input>
+                @ion-blur="emailTouched = true"
+              />
             </ion-item>
-            <div v-if="emailError && emailTouched" class="validation-error">
+            <div
+              v-if="emailError && emailTouched"
+              class="validation-error"
+            >
               {{ emailError }}
             </div>
 
             <!-- Password Input -->
-            <ion-item class="input-item" :class="{ 'ion-invalid': passwordError && passwordTouched }">
-              <ion-icon :icon="lockClosedOutline" slot="start"></ion-icon>
+            <ion-item
+              class="input-item"
+              :class="{ 'ion-invalid': passwordError && passwordTouched }"
+            >
+              <template #start>
+                <ion-icon :icon="lockClosedOutline" />
+              </template>
               <ion-input
                 v-model="formData.password"
                 :type="showPassword ? 'text' : 'password'"
                 label="Password"
-                label-placement="floating"
+                name="password"
+                labelPlacement="floating"
                 placeholder="At least 6 characters"
+                :disabled="authLoading"
                 @ion-blur="passwordTouched = true"
-                :disabled="authLoading"
-              ></ion-input>
-              <ion-button
-                slot="end"
-                fill="clear"
-                @click="showPassword = !showPassword"
-                :disabled="authLoading"
-              >
-                <ion-icon
-                  :icon="showPassword ? eyeOffOutline : eyeOutline"
-                  slot="icon-only"
-                ></ion-icon>
-              </ion-button>
+              />
+              <template #end>
+                <ion-button
+                
+                  fill="clear"
+                  :disabled="authLoading"
+                  @click="showPassword = !showPassword"
+                >
+                  <template #icon-only>
+                    <ion-icon :icon="showPassword ? eyeOffOutline : eyeOutline" />
+                  </template>
+                </ion-button>
+              </template>
             </ion-item>
-            <div v-if="passwordError && passwordTouched" class="validation-error">
+            <div
+              v-if="passwordError && passwordTouched"
+              class="validation-error"
+            >
               {{ passwordError }}
             </div>
 
             <!-- Confirm Password Input -->
-            <ion-item class="input-item" :class="{ 'ion-invalid': confirmPasswordError && confirmPasswordTouched }">
-              <ion-icon :icon="lockClosedOutline" slot="start"></ion-icon>
+            <ion-item
+              class="input-item"
+              :class="{ 'ion-invalid': confirmPasswordError && confirmPasswordTouched }"
+            >
+              <template #start>
+                <ion-icon :icon="lockClosedOutline" />
+              </template>
               <ion-input
                 v-model="formData.confirmPassword"
                 :type="showConfirmPassword ? 'text' : 'password'"
                 label="Confirm Password"
-                label-placement="floating"
+                name="confirm"
+                labelPlacement="floating"
                 placeholder="Re-enter password"
+                :disabled="authLoading"
                 @ion-blur="confirmPasswordTouched = true"
                 @keyup.enter="handleSignup"
-                :disabled="authLoading"
-              ></ion-input>
-              <ion-button
-                slot="end"
-                fill="clear"
-                @click="showConfirmPassword = !showConfirmPassword"
-                :disabled="authLoading"
-              >
-                <ion-icon
-                  :icon="showConfirmPassword ? eyeOffOutline : eyeOutline"
-                  slot="icon-only"
-                ></ion-icon>
-              </ion-button>
+              />
+              <template #end>
+                <ion-button
+                
+                  fill="clear"
+                  :disabled="authLoading"
+                  @click="showConfirmPassword = !showConfirmPassword"
+                >
+                  <template #icon-only>
+                    <ion-icon :icon="showConfirmPassword ? eyeOffOutline : eyeOutline" />
+                  </template>
+                </ion-button>
+              </template>
             </ion-item>
-            <div v-if="confirmPasswordError && confirmPasswordTouched" class="validation-error">
+            <div
+              v-if="confirmPasswordError && confirmPasswordTouched"
+              class="validation-error"
+            >
               {{ confirmPasswordError }}
             </div>
 
             <!-- Password Strength Indicator -->
-            <div v-if="formData.password" class="password-strength">
+            <div
+              v-if="formData.password"
+              class="password-strength"
+            >
               <div class="strength-bar">
                 <div 
-                  class="strength-fill" 
+                  class="strength-fill"
                   :class="passwordStrength.class"
                   :style="{ width: passwordStrength.width }"
-                ></div>
+                />
               </div>
-              <span class="strength-text" :class="passwordStrength.class">
+              <span
+                class="strength-text"
+                :class="passwordStrength.class"
+              >
                 {{ passwordStrength.text }}
               </span>
             </div>
@@ -128,17 +186,26 @@
             <ion-button
               expand="block"
               class="signup-button"
-              @click="handleSignup"
+              type="submit"
               :disabled="!isFormValid || authLoading"
+              @click="handleSignup"
             >
-              <ion-spinner v-if="authLoading" name="crescent"></ion-spinner>
+              <ion-spinner
+                v-if="authLoading"
+                name="crescent"
+              />
               <span v-else>Create Account</span>
             </ion-button>
 
             <!-- Login Link -->
             <div class="login-link">
               <span>Already have an account?</span>
-              <ion-button fill="clear" size="small" router-link="/login" :disabled="authLoading">
+              <ion-button
+                fill="clear"
+                size="small"
+                routerLink="/login"
+                :disabled="authLoading"
+              >
                 Sign In
               </ion-button>
             </div>

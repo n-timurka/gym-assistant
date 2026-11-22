@@ -1,14 +1,3 @@
-<template>
-  <IonHeader>
-    <IonToolbar>
-      <IonButtons slot="start">
-        <IonBackButton default-href="/tabs/workouts" />
-      </IonButtons>
-      <IonTitle>{{ date }}</IonTitle>
-    </IonToolbar>
-  </IonHeader>
-</template>
-
 <script setup lang="ts">
 import {
   IonHeader,
@@ -17,6 +6,18 @@ import {
   IonButtons,
   IonBackButton,
 } from '@ionic/vue';
+import { useWorkoutDetail } from '@/composables/useWorkoutDetail';
 
-defineProps<{ date: string }>();
+const { workoutDateDisplay } = useWorkoutDetail();
 </script>
+
+<template>
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/tabs/workouts" />
+      </ion-buttons>
+      <ion-title>{{ workoutDateDisplay }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+</template>

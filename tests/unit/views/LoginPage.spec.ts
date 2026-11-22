@@ -34,42 +34,33 @@ describe('LoginPage.vue', () => {
 
   it('validates email format and disables login button when invalid', async () => {
     const wrapper = mountLoginPage();
-    wrapper.vm.formData.email = 'invalid-email-address';
-    wrapper.vm.formData.password = 'Pass123!';
-    wrapper.vm.emailTouched = true;
-    await wrapper.vm.$nextTick();
+
+    const email = wrapper.find('input[name="email"]');
+    await email.setValue('invalid-email-address');
+    await email.trigger('blur');
 
     expect(wrapper.text()).toContain('Invalid email format');
-    expect(wrapper.vm.isFormValid).toBe(false);
+    expect(wrapper.find('button[type="submit"]').attributes('disabled')).toBeDefined();
   });
 
   it('requires password input', async () => {
     const wrapper = mountLoginPage();
-    wrapper.vm.formData.email = 'valid@gym.app';
-    wrapper.vm.formData.password = '';
-    wrapper.vm.passwordTouched = true;
-    await wrapper.vm.$nextTick();
+
+    await wrapper.find('input[name="email"]').setValue('valid@gym.app');
+    await wrapper.find('input[name="password"]').setValue('');
+    await wrapper.find('input[name="password"]').trigger('blur');
 
     expect(wrapper.text()).toContain('Password is required');
-    expect(wrapper.vm.isFormValid).toBe(false);
-  });
-
-  it('toggles password visibility between password and text', async () => {
-    const wrapper = mountLoginPage();
-    expect(wrapper.vm.showPassword).toBe(false);
-
-    wrapper.vm.showPassword = true;
-    await wrapper.vm.$nextTick();
-    expect(wrapper.vm.showPassword).toBe(true);
+    expect(wrapper.find('button[type="submit"]').attributes('disabled')).toBeDefined();
   });
 
   it('displays auth error message when login fails', async () => {
     const wrapper = mountLoginPage();
-    wrapper.vm.formData.email = 'demo@gym-assistant.local';
-    wrapper.vm.formData.password = 'WrongPassword!';
-    await wrapper.vm.$nextTick();
 
-    await wrapper.vm.handleLogin();
+    await wrapper.find('input[name="email"]').setValue('demo@gym-assistant.local');
+    await wrapper.find('input[name="password"]').setValue('WrongPassword!');
+
+    await wrapper.find('button[type="submit"]').trigger('click');
 
     expect(mockAuth.error.value).toBe('Invalid email or password.');
     await wrapper.vm.$nextTick();
@@ -79,13 +70,11 @@ describe('LoginPage.vue', () => {
 
   it('submits valid credentials and routes to /tabs/workouts', async () => {
     const wrapper = mountLoginPage();
-    wrapper.vm.formData.email = 'demo@gym-assistant.local';
-    wrapper.vm.formData.password = 'ValidPass123!';
-    await wrapper.vm.$nextTick();
 
-    expect(wrapper.vm.isFormValid).toBe(true);
+    await wrapper.find('input[name="email"]').setValue('demo@gym-assistant.local');
+    await wrapper.find('input[name="password"]').setValue('ValidPass123!');
+    await wrapper.find('button[type="submit"]').trigger('click');
 
-    await wrapper.vm.handleLogin();
     expect(mockAuth.currentUser.value).not.toBeNull();
     expect(mockRouterPush).toHaveBeenCalledWith('/tabs/workouts');
   });

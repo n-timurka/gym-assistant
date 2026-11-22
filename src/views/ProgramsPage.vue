@@ -29,7 +29,6 @@ const { currentUser } = useAuth();
 const router = useRouter();
 const programs = ref<Program[]>([]);
 const loading = ref(true);
-const error = ref<string | null>(null);
 let unsubscribe: (() => void) | null = null;
 
 onMounted(() => {
@@ -55,15 +54,11 @@ const openCreateModal = async () => {
   const { data, role } = await modal.onWillDismiss();
 
   if (role === 'confirm' && data) {
-    try {
-      await programService.createProgram({
-        userId: currentUser.value?.uid || '',
-        ...data,
-        workouts: []
-      });
-    } catch (err: any) {
-      error.value = err.message;
-    }
+    await programService.createProgram({
+      userId: currentUser.value?.uid || '',
+      ...data,
+      workouts: []
+    });
   }
 };
 
@@ -79,11 +74,7 @@ const openEditModal = async (program: Program) => {
   const { data, role } = await modal.onWillDismiss();
 
   if (role === 'confirm' && data) {
-    try {
-      await programService.updateProgram(program.id, data);
-    } catch (err: any) {
-      error.value = err.message;
-    }
+    await programService.updateProgram(program.id, data);
   }
 };
 
@@ -101,11 +92,7 @@ const confirmDelete = async (program: Program) => {
         text: 'Delete',
         role: 'destructive',
         handler: async () => {
-          try {
-            await programService.deleteProgram(program.id);
-          } catch (err: any) {
-            error.value = err.message;
-          }
+          await programService.deleteProgram(program.id);
         }
       }
     ]
@@ -115,10 +102,16 @@ const confirmDelete = async (program: Program) => {
 </script>
 
 <template>
-  <AppLayout title="Workout Programs" :loading="loading">
+  <app-layout
+    title="Workout Programs"
+    :loading="loading"
+  >
     <!-- Empty State -->
-    <div v-if="programs.length === 0" class="empty-state">
-      <EmptyState
+    <div
+      v-if="programs.length === 0"
+      class="empty-state"
+    >
+      <empty-state
         title="No programs yet"
         description="Create your first workout program to get started!"
         :action="{ label: 'Create Program', onClick: openCreateModal }"
@@ -126,46 +119,70 @@ const confirmDelete = async (program: Program) => {
     </div>
 
     <!-- Programs List -->
-    <IonList v-else>
-      <IonCard
+    <ion-list v-else>
+      <ion-card
         v-for="program in programs"
         :key="program.id"
         button
         color="light"
-        @click="openProgram(program)">
-        <IonCardHeader class="ion-flex-column">
-          <IonCardSubtitle class="ion-display-flex ion-align-items-center ion-justify-content-between">
-            <IonBadge :color="program.isActive ? 'success' : 'danger'">
+        @click="openProgram(program)"
+      >
+        <ion-card-header class="ion-flex-column">
+          <ion-card-subtitle class="ion-display-flex ion-align-items-center ion-justify-content-between">
+            <ion-badge :color="program.isActive ? 'success' : 'danger'">
               {{ program.isActive ? 'Active' : 'Inactive' }}
-            </IonBadge>
+            </ion-badge>
             <span>{{ program.difficultyLevel }}</span>
-          </IonCardSubtitle>
-          <IonCardTitle>{{ program.name }}</IonCardTitle>
-        </IonCardHeader>
-        <IonCardContent>
-          <p v-if="program.description">{{ program.description }}</p>
+          </ion-card-subtitle>
+          <ion-card-title>{{ program.name }}</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p v-if="program.description">
+            {{ program.description }}
+          </p>
           <div class="ion-display-flex ion-align-items-center ion-justify-content-between">
-            <IonChip color="medium">Workouts: {{ program.workouts.length }}</IonChip>
+            <ion-chip color="medium">
+              Workouts: {{ program.workouts.length }}
+            </ion-chip>
             <div>
-            <IonButton shape="round" @click.stop="openEditModal(program)">
-              <IonIcon slot="icon-only" :icon="pencil" />
-            </IonButton>
-            <IonButton shape="round" color="danger" @click.stop="confirmDelete(program)">
-              <IonIcon slot="icon-only" :icon="trash" />
-            </IonButton>
+              <ion-button
+                shape="round"
+                @click.stop="openEditModal(program)"
+              >
+                <template #icon-only>
+                  <ion-icon 
+                    :icon="pencil"
+                  />
+                </template>
+              </ion-button>
+              <ion-button
+                shape="round"
+                color="danger"
+                @click.stop="confirmDelete(program)"
+              >
+                <template #icon-only>
+                  <ion-icon 
+                    :icon="trash"
+                  />
+                </template>
+              </ion-button>
             </div>
           </div>
-        </IonCardContent>
-      </IonCard>
-    </IonList>
+        </ion-card-content>
+      </ion-card>
+    </ion-list>
 
     <!-- FAB for creating new program -->
     <template #fab>
-      <IonFab slot="fixed" vertical="bottom" horizontal="end">
-        <IonFabButton @click="openCreateModal">
-          <IonIcon :icon="add" />
-        </IonFabButton>
-      </IonFab>
+      <ion-fab
+        slot="fixed"
+        vertical="bottom"
+        horizontal="end"
+      >
+        <ion-fab-button @click="openCreateModal">
+          <ion-icon :icon="add" />
+        </ion-fab-button>
+      </ion-fab>
     </template>
-  </AppLayout>
+  </app-layout>
 </template>

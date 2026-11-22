@@ -116,17 +116,20 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <IonPage>
-    <IonHeader>
-      <IonToolbar>
-        <IonTitle>Exercises</IonTitle>
-      </IonToolbar>
-    </IonHeader>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Exercises</ion-title>
+      </ion-toolbar>
+    </ion-header>
 
-    <IonContent :fullscreen="true">
+    <ion-content :fullscreen="true">
       <div class="ion-padding">
         <!-- Error Message -->
-        <ion-card v-if="error" color="danger">
+        <ion-card
+          v-if="error"
+          color="danger"
+        >
           <ion-card-content>
             <p>{{ error }}</p>
           </ion-card-content>
@@ -134,45 +137,69 @@ onUnmounted(() => {
 
         <!-- Search Bar with Filter Button -->
         <div class="search-filter-section">
-          <IonSearchbar
+          <ion-searchbar
             v-model="searchQuery"
             placeholder="Search exercises by name"
             :debounce="300"
-            show-clear-button="focus"
+            showClearButton="focus"
           />
-          <ion-button fill="clear" @click="showFilterModal = true">
-            <ion-icon slot="start" :icon="funnelOutline"></ion-icon>
-            <ion-badge v-if="activeFilterCount > 0" color="primary">
+          <ion-button
+            fill="clear"
+            @click="showFilterModal = true"
+          >
+            <template #start>
+              <ion-icon :icon="funnelOutline" />
+            </template>
+            <ion-badge
+              v-if="activeFilterCount > 0"
+              color="primary"
+            >
               {{ activeFilterCount }}
             </ion-badge>
           </ion-button>
         </div>
 
         <!-- Loading Spinner -->
-        <div v-if="loading" class="ion-text-center ion-padding">
-          <IonSpinner />
+        <div
+          v-if="loading"
+          class="ion-text-center ion-padding"
+        >
+          <ion-spinner />
         </div>
         <!-- Empty State -->
         <ion-card v-else-if="filteredExercises.length === 0">
           <ion-card-content class="empty-state">
-            <ion-icon :icon="barbellOutline" class="empty-icon"></ion-icon>
+            <ion-icon
+              :icon="barbellOutline"
+              class="empty-icon"
+            />
             <h2>No exercises found</h2>
-            <p v-if="searchQuery">No exercises match "{{ searchQuery }}"</p>
-            <p v-else-if="selectedCategory || selectedType">Try changing your filters</p>
-            <p v-else>Click the download button to seed the exercises database</p>
+            <p v-if="searchQuery">
+              No exercises match "{{ searchQuery }}"
+            </p>
+            <p v-else-if="selectedCategory || selectedType">
+              Try changing your filters
+            </p>
+            <p v-else>
+              Click the download button to seed the exercises database
+            </p>
           </ion-card-content>
         </ion-card>
 
         <!-- Exercises List -->
-        <IonList v-else>
-          <ExerciseListItem
+        <ion-list v-else>
+          <exercise-list-item
             v-for="exercise in filteredExercises"
             :key="exercise.id"
-            :exercise="exercise" />
-        </IonList>
+            :exercise="exercise"
+          />
+        </ion-list>
 
         <!-- Exercise Count -->
-        <div v-if="!loading && filteredExercises.length > 0" class="exercise-count">
+        <div
+          v-if="!loading && filteredExercises.length > 0"
+          class="exercise-count"
+        >
           Showing {{ filteredExercises.length }} exercise{{ filteredExercises.length !== 1 ? 's' : '' }}
           <span v-if="searchQuery"> matching "{{ searchQuery }}"</span>
           <span v-if="selectedCategory"> in {{ selectedCategory }}</span>
@@ -181,13 +208,20 @@ onUnmounted(() => {
       </div>
 
       <!-- Filter Modal -->
-      <ion-modal :is-open="showFilterModal" @didDismiss="showFilterModal = false">
+      <ion-modal
+        :isOpen="showFilterModal"
+        @did-dismiss="showFilterModal = false"
+      >
         <ion-header>
           <ion-toolbar>
             <ion-title>Filter Exercises</ion-title>
-            <ion-buttons slot="end">
-              <ion-button @click="showFilterModal = false">Close</ion-button>
-            </ion-buttons>
+            <template #end>
+              <ion-buttons>
+                <ion-button @click="showFilterModal = false">
+                  Close
+                </ion-button>
+              </ion-buttons>
+            </template>
           </ion-toolbar>
         </ion-header>
         <ion-content>
@@ -236,18 +270,25 @@ onUnmounted(() => {
 
             <!-- Filter Actions -->
             <div class="filter-actions">
-              <ion-button expand="block" fill="clear" @click="clearFilters">
+              <ion-button
+                expand="block"
+                fill="clear"
+                @click="clearFilters"
+              >
                 Clear Filters
               </ion-button>
-              <ion-button expand="block" @click="showFilterModal = false">
+              <ion-button
+                expand="block"
+                @click="showFilterModal = false"
+              >
                 Apply Filters
               </ion-button>
             </div>
           </div>
         </ion-content>
       </ion-modal>
-    </IonContent>
-  </IonPage>
+    </ion-content>
+  </ion-page>
 </template>
 
 <style scoped>

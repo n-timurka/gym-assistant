@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { getStartOfWeek, isSameDay } from '@/helpers/date.helper';
-import { Workout } from '@/types/firebase.types';
+import type { Workout } from '@/types/firebase.types';
 import { computed } from 'vue';
 
 const selectedDate = defineModel<Date>({ required: true });
 const { workouts = [] } = defineProps<{
-  workouts: Workout[],
+  workouts?: Workout[],
 }>();
 
 // Generate days for the current week view
@@ -45,7 +45,10 @@ const hasWorkout = (date: Date) => {
     >
       <span class="day-name">{{ day.dayName }}</span>
       <span class="day-number">{{ day.dayNumber }}</span>
-      <div class="workout-indicator" v-if="hasWorkout(day.date)"></div>
+      <div
+        v-if="hasWorkout(day.date)"
+        class="workout-indicator"
+      />
     </div>
   </div>
 </template>

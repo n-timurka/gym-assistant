@@ -1,20 +1,29 @@
 <template>
   <div class="">
     <!-- Loading Spinner -->
-    <div v-if="loading" class="ion-text-center ion-padding">
-      <IonSpinner />
+    <div
+      v-if="loading"
+      class="ion-text-center ion-padding"
+    >
+      <ion-spinner />
     </div>
 
     <!-- Workout Details (displayed inline below week days) -->
-    <div v-else class="workout-details">
+    <div
+      v-else
+      class="workout-details"
+    >
       <!-- No workout state -->
-      <div class="empty-state" v-if="!selectedDateWorkout">
-        <IonIcon :icon="addOutline" />
+      <div
+        v-if="!selectedDateWorkout"
+        class="empty-state"
+      >
+        <ion-icon :icon="addOutline" />
         <h3>No Workout</h3>
         <p>Nothing planned for {{ formatDate(selectedDate) }}</p>
-        <IonButton @click="$emit('addWorkout')">
+        <ion-button @click="$emit('addWorkout')">
           Create a workout
-        </IonButton>
+        </ion-button>
       </div>
 
       <!-- Workout exists -->
@@ -43,14 +52,16 @@
                 fill="outline"
                 @click="$emit('fillFromWeekPlan', selectedDateWorkout.id)"
               >
-                <ion-icon slot="start" :icon="fitnessOutline"></ion-icon>
+                <template #start>
+                  <ion-icon :icon="fitnessOutline" />
+                </template>
                 Fill from Week Plan
               </ion-button>
               
               <ion-button 
                 expand="block"
                 fill="outline"
-                :router-link="'/workouts/' + selectedDateWorkout.id"
+                :routerLink="'/workouts/' + selectedDateWorkout.id"
               >
                 View Details
               </ion-button>
@@ -58,11 +69,16 @@
 
             <!-- Exercises List -->
             <ion-list v-if="selectedDateWorkout.exercises && selectedDateWorkout.exercises.length > 0">
-              <ion-item v-for="exercise in selectedDateWorkout.exercises" :key="exercise.id">
+              <ion-item
+                v-for="exercise in selectedDateWorkout.exercises"
+                :key="exercise.id"
+              >
                 {{ exercise.name }}
-                <ion-badge slot="end" color="medium">
-                  {{ exercise.category }}
-                </ion-badge>
+                <template #end>
+                  <ion-badge color="medium">
+                    {{ exercise.category }}
+                  </ion-badge>
+                </template>
               </ion-item>
             </ion-list>
             
@@ -72,7 +88,9 @@
               fill="clear" 
               @click="$emit('deleteWorkout', selectedDateWorkout.id)"
             >
-              <ion-icon slot="start" :icon="trashOutline"></ion-icon>
+              <template #start>
+                <ion-icon :icon="trashOutline" />
+              </template>
               Delete Workout
             </ion-button>
           </ion-card-content>

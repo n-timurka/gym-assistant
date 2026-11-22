@@ -1,5 +1,6 @@
 import { useFirebase } from '../composables/useFirebase';
-import { Collections, Program } from '../types/firebase.types';
+import type { Program } from '../types/firebase.types';
+import { Collections } from '../types/firebase.types';
 
 const { getAll, getById, create, update, remove, subscribe } = useFirebase<Program>(Collections.PROGRAMS);
 

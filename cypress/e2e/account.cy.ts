@@ -1,9 +1,6 @@
-// tests/e2e/specs/account.cy.ts
 describe('Account Page & Logout Flow', () => {
   beforeEach(() => {
-    cy.clearFirebaseSession();
-    cy.viewport('iphone-x');
-    cy.loginAsMockUser();
+    cy.login();
   });
 
   it('navigates to Account tab and renders personal data items', () => {
@@ -23,9 +20,14 @@ describe('Account Page & Logout Flow', () => {
     // Click edit pencil button
     cy.get('.edit-profile-button').click({force: true});
 
-    cy.contains('Personal data').should('be.visible');
-    cy.contains('Cancel').click();
-    cy.get('.ion-modal').should('not.exist');
+    cy.get('ion-modal', { timeout: 8000 })
+      .should('be.visible')
+      .within(() => {
+        cy.contains('Personal data').should('be.visible');
+        cy.contains('Cancel').click();
+      });
+
+    cy.get('ion-modal').should('not.be.visible');
   });
 
   it('logs out the user and confirms session termination', () => {

@@ -2,7 +2,7 @@
 import { exercises } from '../../data/exercises';
 import { programs } from '../../data/programs';
 import { users } from '../../data/users';
-import { Exercise, Program, AuthUser, PersonalData } from '../../src/types/firebase.types';
+import type { Exercise, Program, AuthUser, PersonalData } from '@/types/firebase.types';
 
 /**
  * Standard test user extracted from users seed data
@@ -63,9 +63,9 @@ export const mockPrograms: Program[] = programs.map((p) => ({
   difficultyLevel: p.difficultyLevel,
   isActive: p.isActive,
   workouts: p.workouts.map((w) => ({
-    exerciseId: w.exerciseId,
-    sets: w.sets,
-    reps: w.reps,
+    id: w.id,
+    name: w.name,
+    exercises: [],
   })),
   createdAt: new Date('2026-01-01T00:00:00Z'),
   updatedAt: new Date('2026-01-01T00:00:00Z'),

@@ -45,8 +45,9 @@ vite.config.ts.timestamp-*
 vite.config.mts.timestamp-*
 
 # Cypress
-**/e2e/videos
-**/e2e/screenshots
+cypress/videos
+cypress/screenshots
+cypress/downloads
 
 # ESLint
 .eslintcache

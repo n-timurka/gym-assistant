@@ -1,8 +1,8 @@
 import {
-  Exercise,
+  type Exercise,
   ExerciseCategory,
   ExerciseType,
-} from "@/types/firebase.types";
+} from "../src/types/firebase.types";
 
 const exercises: Omit<Exercise, "id">[] = [
   {

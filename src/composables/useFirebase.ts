@@ -1,4 +1,8 @@
-import { ref, Ref } from "vue";
+import type { Ref } from "vue";
+import { ref } from "vue";
+import type {
+  QueryConstraint,
+  DocumentData} from "firebase/firestore";
 import {
   collection,
   doc,
@@ -13,8 +17,6 @@ import {
   documentId,
   orderBy,
   limit,
-  QueryConstraint,
-  DocumentData,
   Timestamp,
 } from "firebase/firestore";
 import { db } from "@/firebase.config";
@@ -39,8 +41,8 @@ export function useFirebase<T extends FirestoreDocument>(
   /**
    * Convert Firestore timestamp to Date
    */
-  const convertTimestamp = (data: DocumentData): any => {
-    const converted: any = { ...data };
+  const convertTimestamp = (data: DocumentData) => {
+    const converted = { ...data };
     Object.keys(converted).forEach((key) => {
       if (converted[key] instanceof Timestamp) {
         converted[key] = converted[key].toDate();
@@ -96,8 +98,8 @@ export function useFirebase<T extends FirestoreDocument>(
 
       documents.value = docs;
       return docs;
-    } catch (err: any) {
-      error.value = err.message;
+    } catch (err) {
+      error.value = (err as Error)?.message || "An error occurred";
       console.error("Error getting documents:", err);
       return [];
     } finally {
@@ -127,8 +129,8 @@ export function useFirebase<T extends FirestoreDocument>(
         error.value = "Document not found";
         return null;
       }
-    } catch (err: any) {
-      error.value = err.message;
+    } catch (err) {
+      error.value = (err as Error)?.message || "An error occurred";
       console.error("Error getting document:", err);
       return null;
     } finally {
@@ -154,8 +156,8 @@ export function useFirebase<T extends FirestoreDocument>(
       const docRef = await addDoc(collectionRef, docData);
       console.log("Document created with ID:", docRef.id);
       return docRef.id;
-    } catch (err: any) {
-      error.value = err.message;
+    } catch (err) {
+      error.value = (err as Error)?.message || "An error occurred" ;
       console.error("Error creating document:", err);
       return null;
     } finally {
@@ -183,8 +185,8 @@ export function useFirebase<T extends FirestoreDocument>(
       await updateDoc(docRef, updateData);
       console.log("Document updated:", id);
       return true;
-    } catch (err: any) {
-      error.value = err.message;
+    } catch (err) {
+      error.value = (err as Error)?.message || "An error occurred";
       console.error("Error updating document:", err);
       return false;
     } finally {
@@ -204,8 +206,8 @@ export function useFirebase<T extends FirestoreDocument>(
       await deleteDoc(docRef);
       console.log("Document deleted:", id);
       return true;
-    } catch (err: any) {
-      error.value = err.message;
+    } catch (err) {
+      error.value = (err as Error)?.message || "An error occurred";
       console.error("Error deleting document:", err);
       return false;
     } finally {

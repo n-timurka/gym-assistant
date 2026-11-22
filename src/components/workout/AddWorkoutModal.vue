@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useFirebase } from '@/composables/useFirebase';
-import { Collections, Exercise, Program, ProgramWorkoutExercise } from '@/types/firebase.types';
+import type { Exercise, Program, ProgramWorkoutExercise } from '@/types/firebase.types';
+import { Collections } from '@/types/firebase.types';
 import {
   IonAccordion,
   IonAccordionGroup,
@@ -89,49 +90,91 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <IonModal :is-open="isOpen">
-    <IonHeader>
-      <IonToolbar>
-        <IonTitle>Add Workout</IonTitle>
-        <IonButtons slot="end">
-          <IonButton @click="isOpen = false">Close</IonButton>
-        </IonButtons>
-      </IonToolbar>
-    </IonHeader>
+  <ion-modal :isOpen="isOpen">
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Add Workout</ion-title>
+        <template #end>
+          <ion-buttons>
+            <ion-button @click="isOpen = false">
+              Close
+            </ion-button>
+          </ion-buttons>
+        </template>
+      </ion-toolbar>
+    </ion-header>
 
-    <IonContent class="ion-padding">
-      <IonAccordionGroup>
-        <IonAccordion v-for="program in programWithExercises" :key="program.id" :value="program.id">
-          <IonItem slot="header" color="light">
-            <IonBadge slot="start">{{ program.workouts.length }}</IonBadge>
-            <IonLabel>{{ program.name }}</IonLabel>
-          </IonItem>
-          <div slot="content" class="ion-padding">
-            <IonAccordionGroup v-model="currentWorkout">
-              <IonAccordion v-for="(workout, index) in program.workouts" :key="workout.id" :value="workout.id">
-                <IonItem slot="header" color="light">
-                  <IonBadge slot="start">{{ workout.exercises.length }}</IonBadge>
-                  <IonLabel>Workout {{ index + 1 }}</IonLabel>
-                </IonItem>
-                <div slot="content">
-                  <IonList>
-                    <IonItem v-for="exercise in workout.exercises" :key="exercise.exerciseId">
-                      <IonLabel>{{ exercise.exercise?.name }}</IonLabel>
-                      <ExerciseCategoryLabel v-if="exercise.exercise" slot="end" :category="exercise.exercise?.category" />
-                    </IonItem>
-                  </IonList>
-                  <div class="ion-display-flex ion-justify-content-center">
-                    <IonButton color="primary" @click="selectWorkout(workout.exercises)">
-                      <IonIcon :icon="add" />
-                      Add
-                    </IonButton>
-                  </div>
-                </div>
-              </IonAccordion>
-            </IonAccordionGroup>
-          </div>
-        </IonAccordion>
-      </IonAccordionGroup>
-    </IonContent>
-  </IonModal>
+    <ion-content class="ion-padding">
+      <ion-accordion-group>
+        <ion-accordion
+          v-for="program in programWithExercises"
+          :key="program.id"
+          :value="program.id"
+        >
+          <template #header>
+            <ion-item color="light">
+              <template #start>
+                <ion-badge>
+                  {{ program.workouts.length }}
+                </ion-badge>
+              </template>
+              <ion-label>{{ program.name }}</ion-label>
+            </ion-item>
+          </template>
+          <template #content>
+            <div class="ion-padding">
+              <ion-accordion-group v-model="currentWorkout">
+                <ion-accordion
+                  v-for="(workout, index) in program.workouts"
+                  :key="workout.id"
+                  :value="workout.id"
+                >
+                  <template #header>
+                    <ion-item 
+                      color="light"
+                    >
+                      <template #start>
+                        <ion-badge>
+                          {{ workout.exercises.length }}
+                        </ion-badge>
+                      </template>
+                      <ion-label>Workout {{ index + 1 }}</ion-label>
+                    </ion-item>
+                  </template>
+                  <template #content>
+                    <div>
+                      <ion-list>
+                        <ion-item
+                          v-for="exercise in workout.exercises"
+                          :key="exercise.exerciseId"
+                        >
+                          <ion-label>{{ exercise.exercise?.name }}</ion-label>
+                          <template #end>
+                            <exercise-category-label
+                              v-if="exercise.exercise"
+                                                 
+                              :category="exercise.exercise?.category"
+                            />
+                          </template>
+                        </ion-item>
+                      </ion-list>
+                      <div class="ion-display-flex ion-justify-content-center">
+                        <ion-button
+                          color="primary"
+                          @click="selectWorkout(workout.exercises)"
+                        >
+                          <ion-icon :icon="add" />
+                          Add
+                        </ion-button>
+                      </div>
+                    </div>
+                  </template>
+                </ion-accordion>
+              </ion-accordion-group>
+            </div>
+          </template>
+        </ion-accordion>
+      </ion-accordion-group>
+    </ion-content>
+  </ion-modal>
 </template>
