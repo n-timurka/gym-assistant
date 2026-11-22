@@ -2,8 +2,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import LoginPage from '@/views/LoginPage.vue';
-import { createMockAuth } from '../../../cypress/fixtures/mockAuth';
-import { ionicStubs } from '../../../cypress/fixtures/ionicStubs';
+import { createMockAuth } from '../../fixtures/mockAuth';
+import { ionicStubs } from '../../fixtures/ionicStubs';
 
 const mockAuth = createMockAuth(null);
 const mockRouterPush = vi.fn();

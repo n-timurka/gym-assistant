@@ -3,9 +3,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ref } from 'vue';
 import { mount } from '@vue/test-utils';
 import AccountPage from '@/views/AccountPage.vue';
-import { createMockAuth } from '../../../cypress/fixtures/mockAuth';
-import { mockPersonalData, mockAuthUser } from '../../../cypress/fixtures/seedData.fixture';
-import { ionicStubs } from '../../../cypress/fixtures/ionicStubs';
+import { createMockAuth } from '../../fixtures/mockAuth';
+import { mockPersonalData, mockAuthUser } from '../../fixtures/seedData.fixture';
+import { ionicStubs } from '../../fixtures/ionicStubs';
 
 const mockAuth = createMockAuth(mockAuthUser);
 const mockRouterPush = vi.fn();
