@@ -1,8 +1,13 @@
 {
   "compilerOptions": {
-    "types": ["cypress", "node"],
-    "isolatedModules": false
+    "composite": true,
+    "noEmit": false,
+    "target": "es6",
+    "lib": ["es6", "dom"],
+    "sourceMap": true,
+    "types": ["cypress", "node"]
   },
-  "include": ["**/*.ts", "../src/**/*.cy.ts", "../cypress.d.ts"],
-  "extends": "../tsconfig.json"
+  "include": ["**/*.ts", "../cypress.d.ts", "../cypress.config.ts"],
+  "extends": "../tsconfig.json",
+  "exclude": []
 }

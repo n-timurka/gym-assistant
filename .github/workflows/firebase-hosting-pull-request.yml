@@ -80,7 +80,6 @@ jobs:
           key: firebase-emulators-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - uses: cypress-io/github-action@v6
         with:
-          browser: chrome
           # the action only installs deps and the Cypress binary; the command runs emulators + app + tests
           command: npm run test:e2e:ci
       - uses: actions/upload-artifact@v4

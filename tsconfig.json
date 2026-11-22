@@ -23,9 +23,8 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "data/users.ts",
-    "tests/**/*",
-    "cypress.d.ts"
+    "tests/**/*"
   ],
-  "exclude": ["node_modules", "dist", "cypress/**"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "exclude": ["node_modules", "dist", "cypress.config.ts", "cypress.d.ts", "cypress"],
+  "references": [{ "path": "./tsconfig.node.json" }, { "path": "./cypress/tsconfig.json" }]
 }

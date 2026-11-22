@@ -23,7 +23,7 @@ const currentWeekEnd = computed(() => getEndOfWeek(currentWeekStart.value));
 const selectedDate = ref(new Date());
 const selectedDateWorkout = computed(() => workouts.value.find(workout => {
   const workoutDate = workout.date
-    ? (typeof (workout.date as any)?.toDate === 'function' ? (workout.date as any).toDate() : new Date(workout.date))
+    ? new Date(workout.date)
     : (workout.createdAt ? new Date(workout.createdAt) : new Date());
   
   return isSameDay(workoutDate, selectedDate.value);
