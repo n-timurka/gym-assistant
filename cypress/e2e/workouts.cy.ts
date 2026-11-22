@@ -135,7 +135,9 @@ describe('Workouts Page User Journey', () => {
       .within(() => {
         cy.get('.workout-indicator').should('exist');
       })
-      .click();
+    cy.get('.day-card')
+      .contains(nextWeekDate.getDate().toString())
+      .closest('.day-card').click();
 
     cy.contains('ion-card-title', formatDate(nextWeekDate)).should('be.visible');
     cy.contains('ion-badge', 'Planned').should('be.visible');
@@ -150,7 +152,9 @@ describe('Workouts Page User Journey', () => {
       .within(() => {
         cy.get('.workout-indicator').should('exist');
       })
-      .click();
+    cy.get('.day-card')
+      .contains(prevWeekDate.getDate().toString())
+      .closest('.day-card').click();
 
     cy.contains('ion-card-title', formatDate(prevWeekDate)).should('be.visible');
     cy.contains('ion-badge', 'Planned').should('be.visible');

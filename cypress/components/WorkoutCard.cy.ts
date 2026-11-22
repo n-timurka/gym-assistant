@@ -1,5 +1,5 @@
 import WorkoutCard from '@/components/workout/WorkoutCard.vue';
-import { ExerciseCategory, ExerciseType, WorkoutStatus, type Workout } from '@/types/firebase.types';
+import { WorkoutStatus, type Workout } from '@/types/firebase.types';
 
 describe('<WorkoutCard />', () => {
   const testDate = new Date(2026, 10, 22);

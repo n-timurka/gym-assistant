@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import WorkoutsPage from '@/views/WorkoutsPage.vue';
-import { WorkoutStatus, type Workout } from '@/types/firebase.types';
+import { WorkoutStatus, type Workout, type QueryOptions } from '@/types/firebase.types';
 
 vi.mock('@/components/workout/WorkoutCard.vue', () => ({
   default: {
@@ -12,8 +12,10 @@ vi.mock('@/components/workout/WorkoutCard.vue', () => ({
   },
 }));
 
-const mockSubscribe = vi.fn(() => mockUnsubscribe);
 const mockUnsubscribe = vi.fn();
+const mockSubscribe = vi.fn(
+  (_options?: QueryOptions, _callback?: (docs: Workout[]) => void) => mockUnsubscribe,
+);
 const mockWorkouts = ref<Workout[]>([]);
 const mockCurrentUser = ref<{ uid: string; email: string } | null>({
   uid: 'user-abc',
@@ -43,14 +45,14 @@ describe('WorkoutsPage.vue', () => {
     mount(WorkoutsPage);
 
     expect(mockSubscribe).toHaveBeenCalledTimes(1);
-    const queryConfig = mockSubscribe.mock.calls[0][0];
+    const [queryConfig] = mockSubscribe.mock.calls[0] ?? [];
 
-    expect(queryConfig.where).toEqual(
+    expect(queryConfig?.where).toEqual(
       expect.arrayContaining([
         { field: 'userId', operator: '==', value: 'user-abc' },
       ])
     );
-    expect(queryConfig.orderBy).toEqual({
+    expect(queryConfig?.orderBy).toEqual({
       field: 'date',
       direction: 'asc',
     });

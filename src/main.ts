@@ -42,7 +42,7 @@ import "./theme/variables.css";
 const app = createApp(App)
   .use(IonicVue, { animated: import.meta.env.VITE_E2E !== 'true' })
   .use(router)
-  .provide('appVersion', '1.1.0');
+  .provide('appVersion', '1.1.1');
 
 router.isReady().then(() => {
   app.mount("#app");

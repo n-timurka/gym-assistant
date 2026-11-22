@@ -10,7 +10,6 @@ import {
   IonButtons,
   IonContent,
   IonHeader,
-  IonIcon,
   IonItem, 
   IonLabel,
   IonList,
@@ -20,7 +19,6 @@ import {
 } from '@ionic/vue';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import ExerciseCategoryLabel from '@/components/ExerciseCategoryLabel.vue';
-import { add } from 'ionicons/icons';
 
 const emits = defineEmits<{
   (e: 'select-workout', ids: string[]): void,
