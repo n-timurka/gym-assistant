@@ -51,13 +51,11 @@ const handleAddExercise = (id: string) => {
     <ion-header>
       <ion-toolbar>
         <ion-title>{{ isSwapping ? 'Swap Exercise' : 'Add Exercise' }}</ion-title>
-        <template #end>
-          <ion-buttons>
-            <ion-button @click="closePicker">
-              Close
-            </ion-button>
-          </ion-buttons>
-        </template>
+        <ion-buttons slot="end">
+          <ion-button @click="closePicker">
+            Close
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 

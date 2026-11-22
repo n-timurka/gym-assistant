@@ -1,28 +1,55 @@
-// tests/e2e/specs/workout-detail-ongoing.cy.ts
-import { resetFirestoreEmulator, seedExercises, seedOngoingWorkout } from '../support/emulator';
-import { formatDate } from '@/helpers/date.helper';
+import { formatDate } from '../../src/helpers/date.helper';
+import { WorkoutStatus, type WorkoutExercise } from '../../src/types/firebase.types';
+import { exercises } from '../../data/exercises';
 
 describe('WorkoutDetailPage - Ongoing Status Journey', () => {
   const TEST_WORKOUT_ID = 'test-ongoing-workout-001';
-  const TEST_USER_ID = 'test-mock-user-uid';
+  let testUserId = 'test-mock-user-uid';
   const today = new Date();
   const formattedToday = formatDate(today);
 
+  const initialWorkoutExercises: WorkoutExercise[] = exercises.slice(0, 5).map((exercise, index) => ({
+    ...exercise,
+    exerciseId: exercise.extId,
+    order: index,
+    sets: Array(3).fill({ reps: 10, weight: 50 })
+  }));
+
   before(() => {
-    // 1. Reset Firestore emulator and seed mock exercises & initial ongoing workout
-    resetFirestoreEmulator();
-    seedExercises();
-    seedOngoingWorkout(TEST_WORKOUT_ID, TEST_USER_ID, today);
+    // Resolve authenticated test user UID to match the workout's userId
+    cy.env(['USER_PASSWORD']).then(({ USER_PASSWORD }) => {
+      const email = Cypress.expose('USER_EMAIL') || 'e2e@example.com';
+      const password = USER_PASSWORD || 'Passw0rd!123';
+      cy.task<string>('auth:ensureUser', { email, password }).then((uid) => {
+        if (uid) testUserId = uid;
+      });
+    });
   });
 
   beforeEach(() => {
-    cy.clearAllSessionStorage();
     // Ensure swiper starts on first slide
     cy.window().then((win) => {
       win.localStorage.setItem('CurrentExerciseIndex', '0');
     });
-    cy.viewport('iphone-x');
-    cy.loginAsMockUser();
+
+    // Authenticate user before each test
+    cy.login();
+
+    cy.task('firestore:seedBatch', [
+      ...exercises.map((ex) => ({ path: `exercises/${ex.extId}`, data: { ...ex, id: ex.extId } })),
+      {
+        path: `workouts/${TEST_WORKOUT_ID}`,
+        data: {
+          userId: testUserId,
+          status: WorkoutStatus.ONGOING,
+          date: today,
+          startTime: today.toISOString(),
+          createdAt: today.toISOString(),
+          updatedAt: today.toISOString(),
+          exercises: initialWorkoutExercises,
+        },
+      },
+    ]);
   });
 
   it('1 & 2. verifies today’s ongoing workout appears on the Workouts tab with Ongoing status', () => {
@@ -48,21 +75,23 @@ describe('WorkoutDetailPage - Ongoing Status Journey', () => {
 
     // Progress is 0%
     cy.get('.progress-label').should('contain', 'Progress').and('contain', '0%');
-    cy.get('ion-progress-bar').should('have.attr', 'value', '0');
+    cy.get('ion-progress-bar').should('have.attr', 'aria-valuenow', '0');
 
     // First active exercise (Barbell Bench Press)
     cy.get('.exercise-title-container h2').should('contain', 'Barbell Bench Press');
     cy.get('.exercise-title-container ion-text').should('contain', '1 of 5');
 
     // Badges & media
-    cy.get('.exercise-badges-overlay').within(() => {
+    cy.get('.exercise-badges-overlay').first().within(() => {
       cy.contains('Chest').should('be.visible');
       cy.contains('Free weights').should('be.visible');
     });
     cy.get('exercise-image, .exercise-image-container').should('be.visible');
 
     // Sets tab rendered by default with 3 sets
-    cy.get('.set-row').should('have.length', 3);
+    cy.get('.exercise-card').first().within(() => {
+      cy.get('.set-row').should('have.length', 3);
+    });
   });
 
   it('5. navigates backward (stays on 1st), navigates forward to 2nd, and navigates to the end', () => {
@@ -100,7 +129,15 @@ describe('WorkoutDetailPage - Ongoing Status Journey', () => {
 
     // ---- Sub-test A: Add Exercise Modal (and close it) ----
     cy.contains('ion-button', 'Options').click();
-    cy.get('ion-action-sheet .action-sheet-button').contains('Add Exercise').click();
+    cy.get('ion-action-sheet')
+      .should('be.visible')
+      .within(() => {
+        cy.get('.action-sheet-title').should('contain.text', 'Exercise Options');
+
+        // 3. Find and click a specific button by text
+        cy.contains('Add Exercise').click();
+      });
+    cy.get('ion-action-sheet').should('not.exist');
 
     cy.get('ion-modal ion-title').should('contain', 'Add Exercise');
     cy.get('ion-modal ion-button').contains('Close').click();
@@ -108,7 +145,15 @@ describe('WorkoutDetailPage - Ongoing Status Journey', () => {
 
     // ---- Sub-test B: Swap Existing Exercise ----
     cy.contains('ion-button', 'Options').click();
-    cy.get('ion-action-sheet .action-sheet-button').contains('Swap Exercise').click();
+    cy.get('ion-action-sheet')
+      .should('be.visible')
+      .within(() => {
+        cy.get('.action-sheet-title').should('contain.text', 'Exercise Options');
+
+        // 3. Find and click a specific button by text
+        cy.contains('Swap Exercise').click();
+      });
+    cy.get('ion-action-sheet').should('not.exist');
 
     cy.get('ion-modal ion-title').should('contain', 'Swap Exercise');
     // Select 'Chest Fly Machine' (seeded under Chest)
@@ -119,7 +164,15 @@ describe('WorkoutDetailPage - Ongoing Status Journey', () => {
 
     // ---- Sub-test C: Delete Exercise ----
     cy.contains('ion-button', 'Options').click();
-    cy.get('ion-action-sheet .action-sheet-button').contains('Delete Exercise').click();
+    cy.get('ion-action-sheet')
+      .should('be.visible')
+      .within(() => {
+        cy.get('.action-sheet-title').should('contain.text', 'Exercise Options');
+
+        // 3. Find and click a specific button by text
+        cy.contains('Delete Exercise').click();
+      });
+    cy.get('ion-action-sheet').should('not.exist');
 
     // Confirm deletion in Ionic alert
     cy.get('ion-alert .alert-button').contains('Delete').click();
@@ -134,7 +187,7 @@ describe('WorkoutDetailPage - Ongoing Status Journey', () => {
     // Switch to Info tab
     cy.contains('ion-segment-button', 'Info').click();
 
-    cy.get('.info-container').within(() => {
+    cy.get('.info-container').first().within(() => {
       // Description
       cy.get('.description').should('not.be.empty');
 
@@ -160,28 +213,40 @@ describe('WorkoutDetailPage - Ongoing Status Journey', () => {
     cy.visit(`/workouts/${TEST_WORKOUT_ID}`);
 
     // 1. Initial sets count is 3
-    cy.get('.set-row').should('have.length', 3);
-
-    // 2. Add new set
-    cy.contains('ion-button', '+ Add Set').click();
-    cy.get('.set-row').should('have.length', 4);
-    cy.get('.set-row').last().find('.set-number').should('contain', '4');
-
-    // 3. Delete set
-    cy.get('.set-row').last().find('ion-button[color="danger"]').click();
-    cy.get('.set-row').should('have.length', 3);
-
-    // 4. Update weight and reps on Set 1
-    cy.get('.set-row').first().within(() => {
-      // Weight input
-      cy.get('ion-input[type="number"]').first().find('input').clear().type('75');
-      // Reps input
-      cy.get('ion-input[type="number"]').last().find('input').clear().type('12');
+    cy.get('.exercise-card').first().within(() => {
+      cy.get('.set-row').should('have.length', 3);
     });
 
-    cy.get('.set-row').first().within(() => {
-      cy.get('ion-input[type="number"]').first().find('input').should('have.value', '75');
-      cy.get('ion-input[type="number"]').last().find('input').should('have.value', '12');
+    // 2. Add new set
+    cy.get('.exercise-card').first().within(() => {
+      cy.contains('ion-button', '+ Add Set').click();
+      cy.get('.set-row').should('have.length', 4);
+      cy.get('.set-row').last().find('.set-number').should('contain', '4');
+    });
+
+    // 3. Delete set
+    cy.get('.exercise-card').first().within(() => {
+      cy.get('.set-row').last().find('ion-button[color="danger"]').click();
+      cy.get('.set-row').should('have.length', 3);
+    });
+
+    // 4. Update weight and reps on Set 1
+    cy.get('.exercise-card').first().within(() => {
+      cy.get('.set-row').first().within(() => {
+        // Weight input
+        cy.get('ion-input').first().find('input[type="number"]').clear();
+        cy.get('ion-input').first().find('input[type="number"]').type('75');
+        // Reps input
+        cy.get('ion-input').last().find('input[type="number"]').clear();
+        cy.get('ion-input').last().find('input[type="number"]').type('12');
+      });
+    });
+
+    cy.get('.exercise-card').first().within(() => {
+      cy.get('.set-row').first().within(() => {
+        cy.get('ion-input').first().find('input[type="number"]').should('have.value', '75');
+        cy.get('ion-input').last().find('input[type="number"]').should('have.value', '12');
+      });
     });
   });
 
@@ -214,11 +279,11 @@ describe('WorkoutDetailPage - Ongoing Status Journey', () => {
     cy.get('.exercise-title-container h2').should('contain', firstExerciseName);
 
     // Complete all 3 sets for current exercise
-    cy.get('.set-row').each(($row) => {
+    cy.get('.exercise-card').first().find('.set-row').each(($row) => {
       cy.wrap($row).find('ion-checkbox').click();
       // Dismiss the rest timer sheet if it opens
-      cy.get('body').then(($body) => {
-        if ($body.find('ion-action-sheet').length > 0) {
+      cy.document().then((doc) => {
+        if (doc.querySelector('ion-action-sheet')) {
           cy.contains('ion-action-sheet .action-sheet-button', 'Cancel').click({ force: true });
         }
       });
@@ -261,7 +326,7 @@ describe('WorkoutDetailPage - Ongoing Status Journey', () => {
       cy.get('.timer-overlay .timer-value').should(($val) => {
         const text = $val.text().trim();
         // Accept exact expectedTime or ticked-down by 1 second
-        expect(text === expectedTime || text.startsWith(expectedTime.slice(0, 4))).to.be.true;
+        expect(text === expectedTime || text.startsWith(expectedTime.slice(0, 4))).to.equal(true);
       });
 
       // Dismiss timer overlay using its close icon
@@ -305,7 +370,7 @@ describe('WorkoutDetailPage - Ongoing Status Journey', () => {
 
     // 1. Progress is 100%
     cy.get('.progress-label').should('contain', '100%');
-    cy.get('ion-progress-bar').should('have.attr', 'value', '1');
+    cy.get('ion-progress-bar').should('have.attr', 'aria-valuenow', '1');
 
     // 2. Stop Training button is visible in footer with danger color
     cy.get('ion-footer ion-button[color="danger"]')
@@ -319,6 +384,6 @@ describe('WorkoutDetailPage - Ongoing Status Journey', () => {
 
     // Workout status transitions to Completed
     cy.get('ion-alert').should('not.exist');
-    cy.contains('ion-badge', 'Completed', { timeout: 8000 }).should('be.visible');
+    cy.contains('Workout Summary', { timeout: 8000 }).should('be.visible');
   });
 });

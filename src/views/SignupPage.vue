@@ -51,6 +51,7 @@
               <ion-input
                 v-model="formData.displayName"
                 type="text"
+                name="name"
                 label="Name (Optional)"
                 labelPlacement="floating"
                 placeholder="Your name"
@@ -70,6 +71,7 @@
                 v-model="formData.email"
                 type="email"
                 label="Email"
+                name="email"
                 labelPlacement="floating"
                 placeholder="your@email.com"
                 :disabled="authLoading"
@@ -95,6 +97,7 @@
                 v-model="formData.password"
                 :type="showPassword ? 'text' : 'password'"
                 label="Password"
+                name="password"
                 labelPlacement="floating"
                 placeholder="At least 6 characters"
                 :disabled="authLoading"
@@ -132,6 +135,7 @@
                 v-model="formData.confirmPassword"
                 :type="showConfirmPassword ? 'text' : 'password'"
                 label="Confirm Password"
+                name="confirm"
                 labelPlacement="floating"
                 placeholder="Re-enter password"
                 :disabled="authLoading"
@@ -165,7 +169,7 @@
             >
               <div class="strength-bar">
                 <div 
-                  class="strength-fill" 
+                  class="strength-fill"
                   :class="passwordStrength.class"
                   :style="{ width: passwordStrength.width }"
                 />
@@ -182,6 +186,7 @@
             <ion-button
               expand="block"
               class="signup-button"
+              type="submit"
               :disabled="!isFormValid || authLoading"
               @click="handleSignup"
             >

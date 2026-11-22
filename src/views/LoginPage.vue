@@ -41,6 +41,7 @@
                 v-model="formData.email"
                 type="email"
                 label="Email"
+                name="email"
                 labelPlacement="floating"
                 placeholder="your@email.com"
                 :disabled="authLoading"
@@ -67,6 +68,7 @@
                 :type="showPassword ? 'text' : 'password'"
                 label="Password"
                 labelPlacement="floating"
+                name="password"
                 placeholder="Enter your password"
                 :disabled="authLoading"
                 @ion-blur="passwordTouched = true"
@@ -74,7 +76,6 @@
               />
               <template #end>
                 <ion-button
-                
                   fill="clear"
                   :disabled="authLoading"
                   @click="showPassword = !showPassword"
@@ -108,6 +109,7 @@
             <ion-button
               expand="block"
               class="login-button"
+              type="submit"
               :disabled="!isFormValid || authLoading"
               @click="handleLogin"
             >

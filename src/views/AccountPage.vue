@@ -126,6 +126,7 @@ const menuItems = computed(() => [
   {
     label: `Clear Cache (${cacheSize.value?.toFixed()} MB)`,
     icon: trash,
+    id: 'clear-cache-btn',
     action: async () => {
       await clearExerciseCache();
     },
@@ -133,11 +134,13 @@ const menuItems = computed(() => [
   {
     label: 'Check Timer',
     icon: timeOutline,
+    id: 'check-timer-btn',
     action: () => startTimer(5),
   },
   {
     icon: logOutOutline,
     label: "Log Out",
+    id: 'logout-btn',
     action: async () => {
       const result = await logout();
 
@@ -230,6 +233,7 @@ const menuItems = computed(() => [
         <ion-list lines="none">
           <ion-item
             v-for="item in menuItems"
+            :id="item.id"
             :key="item.label"
             :button="true"
             @click="item.action"
@@ -255,27 +259,23 @@ const menuItems = computed(() => [
       <ion-header>
         <ion-toolbar>
           <ion-title>Personal data</ion-title>
-          <template #start>
-            <ion-buttons>
-              <ion-button
-                :disabled="isSaving"
-                @click="isEditOpen = false"
-              >
-                Cancel
-              </ion-button>
-            </ion-buttons>
-          </template>
-          <template #end>
-            <ion-buttons>
-              <ion-button
-                :strong="true"
-                :disabled="isSaving"
-                @click="savePersonalData"
-              >
-                {{ isSaving ? 'Saving…' : 'Save' }}
-              </ion-button>
-            </ion-buttons>
-          </template>
+          <ion-buttons slot="start">
+            <ion-button
+              :disabled="isSaving"
+              @click="isEditOpen = false"
+            >
+              Cancel
+            </ion-button>
+          </ion-buttons>
+          <ion-buttons slot="end">
+            <ion-button
+              :strong="true"
+              :disabled="isSaving"
+              @click="savePersonalData"
+            >
+              {{ isSaving ? 'Saving…' : 'Save' }}
+            </ion-button>
+          </ion-buttons>
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">

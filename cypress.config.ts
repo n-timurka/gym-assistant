@@ -1,17 +1,30 @@
 import { defineConfig } from 'cypress';
+import { registerTasks } from './cypress/support/tasks';
 
 export default defineConfig({
+  expose: {
+    PROJECT_ID: 'demo-my-app',
+    AUTH_URL: 'http://127.0.0.1:9099',
+    USER_EMAIL: 'e2e@example.com'
+  },
+  env: {
+    USER_PASSWORD: 'Passw0rd!123'
+  },
+  video: false,
+  retries: { runMode: 2, openMode: 0 },
   e2e: {
-    supportFile: 'tests/e2e/support/e2e.{js,jsx,ts,tsx}',
-    specPattern: 'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}',
-    videosFolder: 'tests/e2e/videos',
-    screenshotsFolder: 'tests/e2e/screenshots',
-    baseUrl: 'http://localhost:4173',
-    defaultBrowser: 'chrome',
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    baseUrl: 'http://localhost:5173',
+    supportFile: 'cypress/support/e2e.ts',
+    specPattern: 'cypress/e2e/**/*.cy.{js,ts}',
     setupNodeEvents(on, config) {
-      // implement node event listeners here
-      return config;
+      registerTasks(on, config.expose.PROJECT_ID)
+      return config
     },
+  },
+  component: {
+    devServer: { framework: 'vue', bundler: 'vite' },
+    supportFile: 'cypress/support/component.ts',
+    indexHtmlFile: 'cypress/support/component-index.html',
+    specPattern: 'cypress/components/**/*.cy.ts',
   },
 });

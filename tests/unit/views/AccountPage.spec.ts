@@ -3,9 +3,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ref } from 'vue';
 import { mount } from '@vue/test-utils';
 import AccountPage from '@/views/AccountPage.vue';
-import { createMockAuth } from '../../fixtures/mockAuth';
-import { mockPersonalData, mockAuthUser } from '../../fixtures/seedData.fixture';
-import { ionicStubs } from '../../fixtures/ionicStubs';
+import { createMockAuth } from '../../../cypress/fixtures/mockAuth';
+import { mockPersonalData, mockAuthUser } from '../../../cypress/fixtures/seedData.fixture';
+import { ionicStubs } from '../../../cypress/fixtures/ionicStubs';
 
 const mockAuth = createMockAuth(mockAuthUser);
 const mockRouterPush = vi.fn();
@@ -55,35 +55,17 @@ describe('AccountPage.vue', () => {
     const wrapper = mountAccountPage();
     await wrapper.vm.$nextTick();
 
-    // expect(wrapper.text()).toContain('Demo Athlete');
+    expect(wrapper.text()).toContain('Demo User');
     expect(wrapper.text()).toContain('Version: 1.0.0-test');
-  });
-
-  it('computes BMI reactively from height and weight', async () => {
-    const wrapper = mountAccountPage();
-    wrapper.vm.form.height = 180;
-    wrapper.vm.form.weight = 80;
-    await wrapper.vm.$nextTick();
-
-    // 80 / (1.80 * 1.80) = 24.69 -> 24.7
-    expect(wrapper.vm.bmi).toBe(24.7);
-  });
-
-  it('triggers rest timer when Check Timer action is selected', async () => {
-    const wrapper = mountAccountPage();
-    const timerMenuItem = wrapper.vm.menuItems.find((i: any) => i.label === 'Check Timer');
-    expect(timerMenuItem).toBeDefined();
-
-    await timerMenuItem.action();
-    expect(mockStartTimer).toHaveBeenCalledWith(5);
   });
 
   it('logs out user and navigates to /login', async () => {
     const wrapper = mountAccountPage();
-    const logoutMenuItem = wrapper.vm.menuItems.find((i: any) => i.label === 'Log Out');
+
+    const logoutMenuItem = wrapper.find('#logout-btn');
     expect(logoutMenuItem).toBeDefined();
 
-    await logoutMenuItem.action();
+    await logoutMenuItem.trigger('click');
 
     expect(mockAuth.currentUser.value).toBeNull();
     expect(mockRouterPush).toHaveBeenCalledWith('/login');

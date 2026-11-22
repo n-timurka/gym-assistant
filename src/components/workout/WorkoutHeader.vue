@@ -14,11 +14,9 @@ const { workoutDateDisplay } = useWorkoutDetail();
 <template>
   <ion-header>
     <ion-toolbar>
-      <template #start>
-        <ion-buttons>
-          <ion-back-button defaultHref="/tabs/workouts" />
-        </ion-buttons>
-      </template>
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/tabs/workouts" />
+      </ion-buttons>
       <ion-title>{{ workoutDateDisplay }}</ion-title>
     </ion-toolbar>
   </ion-header>

@@ -34,6 +34,7 @@ npm-debug.log*
 # Environment variables
 .env
 .env.local
+.env.e2e
 .env.*.local
 
 # Firebase
@@ -45,8 +46,9 @@ vite.config.ts.timestamp-*
 vite.config.mts.timestamp-*
 
 # Cypress
-**/e2e/videos
-**/e2e/screenshots
+cypress/videos
+cypress/screenshots
+cypress/downloads
 
 # ESLint
 .eslintcache
