@@ -1,25 +1,21 @@
 <template>
   <ion-header>
     <ion-toolbar>
-      <template #start>
-        <ion-buttons>
-          <ion-button @click="cancel">
-            Cancel
-          </ion-button>
-        </ion-buttons>
-      </template>
+      <ion-buttons slot="start">
+        <ion-button @click="cancel">
+          Cancel
+        </ion-button>
+      </ion-buttons>
       <ion-title>{{ program ? 'Edit' : 'Create' }} Program</ion-title>
-      <template #end>
-        <ion-buttons>
-          <ion-button
-            :strong="true"
-            :disabled="!isValid"
-            @click="confirm"
-          >
-            {{ program ? 'Update' : 'Create' }}
-          </ion-button>
-        </ion-buttons>
-      </template>
+      <ion-buttons slot="end">
+        <ion-button
+          :strong="true"
+          :disabled="!isValid"
+          @click="confirm"
+        >
+          {{ program ? 'Update' : 'Create' }}
+        </ion-button>
+      </ion-buttons>
     </ion-toolbar>
   </ion-header>
 
@@ -84,9 +80,10 @@
         </ion-item>
         <ion-item>
           <ion-label>Active Program</ion-label>
-          <template #end>
-            <ion-toggle v-model="formData.isActive" />
-          </template>
+          <ion-toggle
+            slot="end"
+            v-model="formData.isActive"
+          />
         </ion-item>
       </ion-item-group>
     </ion-list>

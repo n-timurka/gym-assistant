@@ -94,13 +94,11 @@ onUnmounted(() => {
     <ion-header>
       <ion-toolbar>
         <ion-title>Add Workout</ion-title>
-        <template #end>
-          <ion-buttons>
-            <ion-button @click="isOpen = false">
-              Close
-            </ion-button>
-          </ion-buttons>
-        </template>
+        <ion-buttons slot="end">
+          <ion-button @click="isOpen = false">
+            Close
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
@@ -111,68 +109,59 @@ onUnmounted(() => {
           :key="program.id"
           :value="program.id"
         >
-          <template #header>
-            <ion-item color="light">
-              <template #start>
-                <ion-badge>
-                  {{ program.workouts.length }}
+          <ion-item slot="header">
+            <ion-badge slot="start">
+              {{ program.workouts.length }}
+            </ion-badge>
+            <ion-label>{{ program.name }}</ion-label>
+          </ion-item>
+          <ion-accordion-group
+            slot="content"
+            v-model="currentWorkout"
+          >
+            <ion-accordion
+              v-for="(workout, index) in program.workouts"
+              :key="workout.id"
+              :value="workout.id"
+              class="ion-padding"
+            >
+              <ion-item 
+                slot="header"
+                color="light"
+              >
+                <ion-badge slot="start">
+                  {{ workout.exercises.length }}
                 </ion-badge>
-              </template>
-              <ion-label>{{ program.name }}</ion-label>
-            </ion-item>
-          </template>
-          <template #content>
-            <div class="ion-padding">
-              <ion-accordion-group v-model="currentWorkout">
-                <ion-accordion
-                  v-for="(workout, index) in program.workouts"
-                  :key="workout.id"
-                  :value="workout.id"
+                <ion-label>Workout {{ index + 1 }}</ion-label>
+              </ion-item>
+              <ion-list slot="content">
+                <ion-item
+                  v-for="exercise in workout.exercises"
+                  :key="exercise.exerciseId"
                 >
-                  <template #header>
-                    <ion-item 
-                      color="light"
-                    >
-                      <template #start>
-                        <ion-badge>
-                          {{ workout.exercises.length }}
-                        </ion-badge>
-                      </template>
-                      <ion-label>Workout {{ index + 1 }}</ion-label>
-                    </ion-item>
-                  </template>
-                  <template #content>
-                    <div>
-                      <ion-list>
-                        <ion-item
-                          v-for="exercise in workout.exercises"
-                          :key="exercise.exerciseId"
-                        >
-                          <ion-label>{{ exercise.exercise?.name }}</ion-label>
-                          <template #end>
-                            <exercise-category-label
-                              v-if="exercise.exercise"
-                                                 
-                              :category="exercise.exercise?.category"
-                            />
-                          </template>
-                        </ion-item>
-                      </ion-list>
-                      <div class="ion-display-flex ion-justify-content-center">
-                        <ion-button
-                          color="primary"
-                          @click="selectWorkout(workout.exercises)"
-                        >
-                          <ion-icon :icon="add" />
-                          Add
-                        </ion-button>
-                      </div>
-                    </div>
-                  </template>
-                </ion-accordion>
-              </ion-accordion-group>
-            </div>
-          </template>
+                  <ion-label>{{ exercise.exercise?.name }}</ion-label>
+                  <ion-note
+                    v-if="exercise.exercise"
+                    slot="end"
+                  >
+                    <exercise-category-label
+                      :category="exercise.exercise?.category"
+                      size="sm"
+                    />
+                  </ion-note>
+                </ion-item>
+                <ion-item
+                  button
+                  color="primary"
+                  @click="selectWorkout(workout.exercises)"
+                >
+                  <ion-label>
+                    Add
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-accordion>
+          </ion-accordion-group>
         </ion-accordion>
       </ion-accordion-group>
     </ion-content>

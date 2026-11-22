@@ -27,21 +27,21 @@ const { workout, workoutDuration, workoutSets } = useWorkoutDetail();
         <ion-list>
           <ion-item>
             <ion-label>Time</ion-label>
-            <template #end>
-              <ion-badge>{{ workoutDuration }} min.</ion-badge>
-            </template>
+            <ion-badge slot="end">
+              {{ workoutDuration }} min.
+            </ion-badge>
           </ion-item>
           <ion-item>
             <ion-label>Exercises</ion-label>
-            <template #end>
-              <ion-badge>{{ workout?.exercises.length || 0 }}</ion-badge>
-            </template>
+            <ion-badge slot="end">
+              {{ workout?.exercises.length || 0 }}
+            </ion-badge>
           </ion-item>
           <ion-item>
             <ion-label>Sets</ion-label>
-            <template #end>
-              <ion-badge>{{ workoutSets }}</ion-badge>
-            </template>
+            <ion-badge slot="end">
+              {{ workoutSets }}
+            </ion-badge>
           </ion-item>
         </ion-list>
       </ion-card-content>

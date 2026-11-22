@@ -101,9 +101,7 @@ export default withVueTs(
         registeredComponentsOnly: false,
       }],
       'vue/no-unused-refs': 'warn',
-      'vue/no-deprecated-slot-attribute': ['error', {
-        ignore: ['/^ion-/']
-      }]
+      'vue/no-deprecated-slot-attribute': 'off',
     },
   },
 
