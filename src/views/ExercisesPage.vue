@@ -147,9 +147,10 @@ onUnmounted(() => {
             fill="clear"
             @click="showFilterModal = true"
           >
-            <template #start>
-              <ion-icon :icon="funnelOutline" />
-            </template>
+            <ion-icon
+              slot="start"
+              :icon="funnelOutline"
+            />
             <ion-badge
               v-if="activeFilterCount > 0"
               color="primary"

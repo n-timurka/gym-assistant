@@ -4,7 +4,18 @@ import { useFirebase } from '@/composables/useFirebase';
 import { calculateDuration, formatDate } from '@/helpers/date.helper';
 import type { Workout} from '@/types/firebase.types';
 import { Collections, WorkoutStatus } from '@/types/firebase.types';
-import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonIcon, IonItem, IonList, IonSpinner } from '@ionic/vue';
+import {
+  IonButton,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonCardTitle,
+  IonIcon,
+  IonItem,
+  IonList,
+  IonSpinner,
+} from '@ionic/vue';
 import { addOutline, trashOutline } from 'ionicons/icons';
 import WorkoutStatusLabel from '@/components/WorkoutStatusLabel.vue';
 import { computed } from 'vue';
@@ -124,9 +135,10 @@ const deleteWorkout = async () => {
               :key="exercise.id"
             >
               {{ exercise.name }}
-              <template #end>
-                <exercise-category-label :category="exercise.category" />
-              </template>
+              <exercise-category-label
+                slot="end"
+                :category="exercise.category"
+              />
             </ion-item>
           </ion-list>
 

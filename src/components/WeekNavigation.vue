@@ -31,18 +31,20 @@ const weekDisplay = computed(() => {
       fill="clear"
       @click="prevWeek"
     >
-      <template #icon-only>
-        <ion-icon :icon="chevronBackOutline" />
-      </template>
+      <ion-icon
+        slot="icon-only"
+        :icon="chevronBackOutline"
+      />
     </ion-button>
     <h2>{{ weekDisplay }}</h2>
     <ion-button
       fill="clear"
       @click="nextWeek"
     >
-      <template #icon-only>
-        <ion-icon :icon="chevronForwardOutline" />
-      </template>
+      <ion-icon
+        slot="icon-only"
+        :icon="chevronForwardOutline"
+      />
     </ion-button>
   </div>
 </template>
@@ -71,7 +73,7 @@ const weekDisplay = computed(() => {
 }
 
 .week-navigation-header h2 {
-  font-size: 0.875rem;
+  font-size: 1rem;
   line-height: 1.25rem; 
   font-weight: 700; 
   color: var(--ion-color-foreground);

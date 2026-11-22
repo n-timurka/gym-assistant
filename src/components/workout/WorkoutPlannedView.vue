@@ -64,40 +64,39 @@ const loadFromProgram = (ids: string[]) => {
           :key="exercise.exerciseId"
           :value="exercise.exerciseId"
         >
-          <template #header>
-            <ion-item
-              v-if="exercise.exercise"
-              color="light"
+          <ion-item
+            v-if="exercise.exercise"
+            slot="header"
+            color="light"
+          >
+            <ion-label>{{ exercise.exercise.name }}</ion-label>
+            <exercise-category-label
+              :category="exercise.exercise?.category"
+              size="sm"
+            />
+            <ion-reorder slot="start" />
+          </ion-item>
+
+          <div
+            slot="content"
+            class="ion-padding"
+          >
+            <workout-exercise-card
+              :exercise="exercise"
+              @add-set="addSet(index)"
+              @remove-set="(setIndex: number) => removeSet(index, setIndex)"
+              @update-set="saveWorkoutDebounced"
+            />
+            <ion-button
+              class="ion-margin-top"
+              expand="block"
+              fill="outline"
+              color="danger"
+              @click="deleteExercise(index)"
             >
-              <ion-label>{{ exercise.exercise.name }}</ion-label>
-              <exercise-category-label
-                :category="exercise.exercise?.category"
-                size="sm"
-              />
-              <template #start>
-                <ion-reorder />
-              </template>
-            </ion-item>
-          </template>
-          <template #content>
-            <div class="ion-padding">
-              <workout-exercise-card
-                :exercise="exercise"
-                @add-set="addSet(index)"
-                @remove-set="(setIndex: number) => removeSet(index, setIndex)"
-                @update-set="saveWorkoutDebounced"
-              />
-              <ion-button
-                class="ion-margin-top"
-                expand="block"
-                fill="outline"
-                color="danger"
-                @click="deleteExercise(index)"
-              >
-                Delete Exercise
-              </ion-button>
-            </div>
-          </template>
+              Delete Exercise
+            </ion-button>
+          </div>
         </ion-accordion>
       </ion-reorder-group>
     </ion-accordion-group>

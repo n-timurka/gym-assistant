@@ -2,11 +2,9 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <template #start>
-          <ion-buttons>
-            <ion-back-button defaultHref="/tabs/exercises" />
-          </ion-buttons>
-        </template>
+        <ion-buttons slot="start">
+          <ion-back-button defaultHref="/tabs/exercises" />
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
@@ -128,13 +126,15 @@
           <!-- Current Weight Section -->
           <ion-card v-if="progressRecords.length > 0">
             <ion-card-header>
-              <ion-card-title>{{ isCardio ? 'Best Time' : 'Current Weight' }}</ion-card-title>
+              <ion-card-title class="ion-text-center">
+                {{ isCardio ? 'Best Time' : 'Current Weight' }}
+              </ion-card-title>
             </ion-card-header>
             <ion-card-content>
               <div class="current-weight">
                 <h2>{{ currentWeight }} {{ isCardio ? 'min' : 'kg' }}</h2>
                 <p class="weight-date">
-                  {{ isCardio ? 'Best Time' : 'Current Weight' }} • Last updated: {{ formatDate(currentWeightDate) }}
+                  Last updated: {{ formatDate(currentWeightDate) }}
                 </p>
               </div>
             </ion-card-content>
@@ -155,11 +155,12 @@
                   <ion-label>
                     <h3>{{ formatDate(record.date) }}</h3>
                   </ion-label>
-                  <template #end>
-                    <ion-note class="weight-value">
-                      {{ record.weight }} {{ isCardio ? 'min' : 'kg' }}
-                    </ion-note>
-                  </template>
+                  <ion-note
+                    slot="end"
+                    class="weight-value"
+                  >
+                    {{ record.weight }} {{ isCardio ? 'min' : 'kg' }}
+                  </ion-note>
                 </ion-item>
               </ion-list>
             </ion-card-content>

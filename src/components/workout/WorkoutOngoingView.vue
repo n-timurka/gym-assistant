@@ -141,9 +141,10 @@ const handleAddExercise = (id: string) => {
           fill="clear"
           @click="goPrev"
         >
-          <template #icon-only>
-            <ion-icon :icon="chevronBackOutline" />
-          </template>
+          <ion-icon
+            slot="icon-only"
+            :icon="chevronBackOutline"
+          />
         </ion-button>
 
         <div class="exercise-title-container">
@@ -162,9 +163,10 @@ const handleAddExercise = (id: string) => {
           fill="clear"
           @click="goNext"
         >
-          <template #icon-only>
-            <ion-icon :icon="chevronForwardOutline" />
-          </template>
+          <ion-icon
+            slot="icon-only"
+            :icon="chevronForwardOutline"
+          />
         </ion-button>
       </div>
 

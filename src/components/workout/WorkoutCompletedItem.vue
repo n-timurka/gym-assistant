@@ -13,14 +13,12 @@ const isCompleted = computed(() => completedSetsCount.value === exercise.sets.le
 
 <template>
   <ion-item lines="full">
-    <template #start>
-      <ion-thumbnail>
-        <exercise-image
-          :exerciseId="exercise.exercise?.extId"
-          size="xs"
-        />
-      </ion-thumbnail>
-    </template>
+    <ion-thumbnail slot="start">
+      <exercise-image
+        :exerciseId="exercise.exercise?.extId"
+        size="xs"
+      />
+    </ion-thumbnail>
     <ion-label>
       <h2>{{ exercise.exercise?.name }}</h2>
       <p>{{ exercise.exercise?.category }}</p>
@@ -28,13 +26,12 @@ const isCompleted = computed(() => completedSetsCount.value === exercise.sets.le
         {{ completedSetsCount }} / {{ exercise.sets.length }} sets
       </p>
     </ion-label>
-    <template #end>
-      <ion-icon
-        v-if="isCompleted"
-        :icon="checkmarkDoneOutline"
-        color="success"
-      />
-    </template>
+    <ion-icon
+      v-if="isCompleted"
+      slot="end"
+      :icon="checkmarkDoneOutline"
+      color="success"
+    />
   </ion-item>
 </template>
 

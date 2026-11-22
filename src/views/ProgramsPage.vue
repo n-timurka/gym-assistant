@@ -103,7 +103,7 @@ const confirmDelete = async (program: Program) => {
 
 <template>
   <app-layout
-    title="Workout Programs"
+    title="Programs"
     :loading="loading"
   >
     <!-- Empty State -->
@@ -149,22 +149,20 @@ const confirmDelete = async (program: Program) => {
                 shape="round"
                 @click.stop="openEditModal(program)"
               >
-                <template #icon-only>
-                  <ion-icon 
-                    :icon="pencil"
-                  />
-                </template>
+                <ion-icon 
+                  slot="icon-only"
+                  :icon="pencil"
+                />
               </ion-button>
               <ion-button
                 shape="round"
                 color="danger"
                 @click.stop="confirmDelete(program)"
               >
-                <template #icon-only>
-                  <ion-icon 
-                    :icon="trash"
-                  />
-                </template>
+                <ion-icon 
+                  slot="icon-only"
+                  :icon="trash"
+                />
               </ion-button>
             </div>
           </div>
