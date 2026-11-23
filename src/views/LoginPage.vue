@@ -22,9 +22,10 @@
               class="error-item"
             >
               <ion-label class="error-message">
-                <template #start>
-                  <ion-icon :icon="alertCircleOutline" />
-                </template>
+                <ion-icon
+                  slot="start"
+                  :icon="alertCircleOutline"
+                />
                 {{ authError }}
               </ion-label>
             </ion-item>
@@ -34,9 +35,10 @@
               class="input-item"
               :class="{ 'ion-invalid': emailError && emailTouched }"
             >
-              <template #start>
-                <ion-icon :icon="mailOutline" />
-              </template>
+              <ion-icon
+                slot="start"
+                :icon="mailOutline"
+              />
               <ion-input
                 v-model="formData.email"
                 type="email"
@@ -60,9 +62,10 @@
               class="input-item"
               :class="{ 'ion-invalid': passwordError && passwordTouched }"
             >
-              <template #start>
-                <ion-icon :icon="lockClosedOutline" />
-              </template>
+              <ion-icon
+                slot="start"
+                :icon="lockClosedOutline"
+              />
               <ion-input
                 v-model="formData.password"
                 :type="showPassword ? 'text' : 'password'"
@@ -74,17 +77,17 @@
                 @ion-blur="passwordTouched = true"
                 @keyup.enter="handleLogin"
               />
-              <template #end>
-                <ion-button
-                  fill="clear"
-                  :disabled="authLoading"
-                  @click="showPassword = !showPassword"
-                >
-                  <template #icon-only>
-                    <ion-icon :icon="showPassword ? eyeOffOutline : eyeOutline" />
-                  </template>
-                </ion-button>
-              </template>
+              <ion-button
+                slot="end"
+                fill="clear"
+                :disabled="authLoading"
+                @click="showPassword = !showPassword"
+              >
+                <ion-icon
+                  slot="icon-only"
+                  :icon="showPassword ? eyeOffOutline : eyeOutline"
+                />
+              </ion-button>
             </ion-item>
             <div
               v-if="passwordError && passwordTouched"

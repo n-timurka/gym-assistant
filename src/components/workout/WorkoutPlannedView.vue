@@ -21,7 +21,13 @@ const {
   reorderExercises,
   saveWorkoutDebounced,
   clearWorkout,
-  deleteExercise, openAddModal, addExercises, addSet, removeSet } = useWorkoutDetail();
+  deleteExercise,
+  openAddModal,
+  addExercise,
+  addExercises,
+  addSet,
+  removeSet,
+} = useWorkoutDetail();
 
 const isAddWorkoutOpen = ref(false);
 const loadFromProgram = (ids: string[]) => {
@@ -105,7 +111,7 @@ const loadFromProgram = (ids: string[]) => {
       v-model="isAddWorkoutOpen"
       @select-workout="loadFromProgram"
     />
-    <add-exercise-modal />
+    <add-exercise-modal @add-exercise="addExercise" />
 
     <ion-footer
       v-if="workoutExercises.length"

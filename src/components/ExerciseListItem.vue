@@ -26,14 +26,12 @@ const doNavigate = () => {
     detail
     @click="doNavigate"
   >
-    <template #start>
-      <ion-thumbnail>
-        <exercise-image
-          size="xs"
-          :exerciseId="exercise.extId"
-        />
-      </ion-thumbnail>
-    </template>
+    <ion-thumbnail slot="start">
+      <exercise-image
+        size="xs"
+        :exerciseId="exercise.extId"
+      />
+    </ion-thumbnail>
 
     <ion-label>
       <h2>{{ exercise.name }}</h2>

@@ -85,9 +85,10 @@ const handleCompletion = (set: ExerciseSet) => {
           size="small"
           @click="$emit('remove-set', exercise.sets.length - 1, exercise.sets.length - 1)"
         >
-          <template #icon-only>
-            <ion-icon :icon="closeOutline" />
-          </template>
+          <ion-icon
+            slot="icon-only"
+            :icon="closeOutline"
+          />
         </ion-button>
       </div>
 

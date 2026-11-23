@@ -12,7 +12,7 @@ import {
 import { useWorkoutDetail } from '@/composables/useWorkoutDetail';
 import WorkoutCompletedItem from './WorkoutCompletedItem.vue';
 
-const { workout, workoutDuration, workoutSets } = useWorkoutDetail();
+const { workout, workoutDuration, workoutSets, workoutExercises } = useWorkoutDetail();
 </script>
 
 <template>
@@ -49,7 +49,7 @@ const { workout, workoutDuration, workoutSets } = useWorkoutDetail();
 
     <ion-list>
       <workout-completed-item
-        v-for="exercise in workout?.exercises"
+        v-for="exercise in workoutExercises"
         :key="exercise.exerciseId"
         :exercise="exercise"
       />

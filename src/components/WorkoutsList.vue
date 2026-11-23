@@ -52,9 +52,10 @@
                 fill="outline"
                 @click="$emit('fillFromWeekPlan', selectedDateWorkout.id)"
               >
-                <template #start>
-                  <ion-icon :icon="fitnessOutline" />
-                </template>
+                <ion-icon
+                  slot="start"
+                  :icon="fitnessOutline"
+                />
                 Fill from Week Plan
               </ion-button>
               
@@ -74,11 +75,12 @@
                 :key="exercise.id"
               >
                 {{ exercise.name }}
-                <template #end>
-                  <ion-badge color="medium">
-                    {{ exercise.category }}
-                  </ion-badge>
-                </template>
+                <ion-badge
+                  slot="end"
+                  color="medium"
+                >
+                  {{ exercise.category }}
+                </ion-badge>
               </ion-item>
             </ion-list>
             
@@ -88,9 +90,10 @@
               fill="clear" 
               @click="$emit('deleteWorkout', selectedDateWorkout.id)"
             >
-              <template #start>
-                <ion-icon :icon="trashOutline" />
-              </template>
+              <ion-icon
+                slot="start"
+                :icon="trashOutline"
+              />
               Delete Workout
             </ion-button>
           </ion-card-content>

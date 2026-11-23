@@ -30,11 +30,10 @@
           size="small"
           @click="addWorkout"
         >
-          <template #start>
-            <ion-icon 
-              :icon="addOutline"
-            />
-          </template>
+          <ion-icon
+            slot="start"
+            :icon="addOutline"
+          />
           Workout
         </ion-button>
       </div>
