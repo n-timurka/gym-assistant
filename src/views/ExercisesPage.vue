@@ -216,13 +216,11 @@ onUnmounted(() => {
         <ion-header>
           <ion-toolbar>
             <ion-title>Filter Exercises</ion-title>
-            <template #end>
-              <ion-buttons>
-                <ion-button @click="showFilterModal = false">
-                  Close
-                </ion-button>
-              </ion-buttons>
-            </template>
+            <ion-buttons slot="end">
+              <ion-button @click="showFilterModal = false">
+                Close
+              </ion-button>
+            </ion-buttons>
           </ion-toolbar>
         </ion-header>
         <ion-content>

@@ -148,9 +148,10 @@ const deleteWorkout = async () => {
             fill="clear" 
             @click="deleteWorkout"
           >
-            <template #start>
-              <ion-icon :icon="trashOutline" />
-            </template>
+            <ion-icon
+              slot="start"
+              :icon="trashOutline"
+            />
             Delete Workout
           </ion-button>
         </ion-card-content>

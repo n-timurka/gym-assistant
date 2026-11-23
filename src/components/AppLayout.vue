@@ -13,11 +13,12 @@ const { loading = false, backRoute, noPadding = false } = defineProps<{
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <template #start>
-          <ion-buttons v-if="backRoute">
-            <ion-back-button :defaultHref="backRoute" />
-          </ion-buttons>
-        </template>
+        <ion-buttons
+          v-if="backRoute"
+          slot="start"
+        >
+          <ion-back-button :defaultHref="backRoute" />
+        </ion-buttons>
         <ion-title>{{ title }}</ion-title>
       </ion-toolbar>
     </ion-header>

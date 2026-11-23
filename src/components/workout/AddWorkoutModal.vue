@@ -16,6 +16,7 @@ import {
   IonModal,
   IonTitle,
   IonToolbar,
+  IonNote,
 } from '@ionic/vue';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import ExerciseCategoryLabel from '@/components/ExerciseCategoryLabel.vue';

@@ -56,18 +56,17 @@ const { loading, workout, workoutStatus, openAddModal, startTraining, endTrainin
         No workout
       </div>
 
-      <template #fixed>
-        <ion-fab
-          v-if="workoutStatus === WorkoutStatus.PLANNED"
-          vertical="bottom"
-          horizontal="end"
-          class="ion-margin"
-        >
-          <ion-fab-button @click="openAddModal">
-            <ion-icon :icon="addOutline" />
-          </ion-fab-button>
-        </ion-fab>
-      </template>
+      <ion-fab
+        v-if="workoutStatus === WorkoutStatus.PLANNED"
+        slot="fixed"
+        vertical="bottom"
+        horizontal="end"
+        class="ion-margin"
+      >
+        <ion-fab-button @click="openAddModal">
+          <ion-icon :icon="addOutline" />
+        </ion-fab-button>
+      </ion-fab>
     </ion-content>
 
     <ion-footer>

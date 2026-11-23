@@ -319,11 +319,10 @@ const handleAddExercise = (id: string) => {
           fill="outline"
           @click="openExerciseActions"
         >
-          <template #start>
-            <ion-icon 
-              :icon="ellipsisHorizontalOutline"
-            />
-          </template>
+          <ion-icon 
+            slot="start"
+            :icon="ellipsisHorizontalOutline"
+          />
           Options
         </ion-button>
       </div>

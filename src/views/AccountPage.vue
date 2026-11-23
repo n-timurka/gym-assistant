@@ -188,33 +188,33 @@ const menuItems = computed(() => [
         >
           <ion-item>
             <ion-label>Birth date</ion-label>
-            <template #end>
-              <ion-note>{{ personalData?.birthDate || 'Not set' }}</ion-note>
-            </template>
+            <ion-note slot="end">
+              {{ personalData?.birthDate || 'Not set' }}
+            </ion-note>
           </ion-item>
           <ion-item>
             <ion-label>Height</ion-label>
-            <template #end>
-              <ion-note>{{ personalData?.height ? `${personalData.height} cm` : 'Not set' }}</ion-note>
-            </template>
+            <ion-note slot="end">
+              {{ personalData?.height ? `${personalData.height} cm` : 'Not set' }}
+            </ion-note>
           </ion-item>
           <ion-item>
             <ion-label>Weight</ion-label>
-            <template #end>
-              <ion-note>{{ personalData?.weight ? `${personalData.weight} kg` : 'Not set' }}</ion-note>
-            </template>
+            <ion-note slot="end">
+              {{ personalData?.weight ? `${personalData.weight} kg` : 'Not set' }}
+            </ion-note>
           </ion-item>
           <ion-item>
             <ion-label>BMI</ion-label>
-            <template #end>
-              <ion-note>{{ personalData?.bmi || 'Not set' }}</ion-note>
-            </template>
+            <ion-note slot="end">
+              {{ personalData?.bmi || 'Not set' }}
+            </ion-note>
           </ion-item>
           <ion-item>
             <ion-label>Body composition</ion-label>
-            <template #end>
-              <ion-note>{{ personalData?.bodyComposition || 'Not set' }}</ion-note>
-            </template>
+            <ion-note slot="end">
+              {{ personalData?.bodyComposition || 'Not set' }}
+            </ion-note>
           </ion-item>
           <ion-item-divider>Weight history</ion-item-divider>
           <ion-item v-if="!personalData?.weightHistory?.length">
@@ -225,9 +225,9 @@ const menuItems = computed(() => [
             :key="entry.date"
           >
             <ion-label>{{ new Date(entry.date).toLocaleDateString() }}</ion-label>
-            <template #end>
-              <ion-note>{{ entry.weight }} kg</ion-note>
-            </template>
+            <ion-note slot="end">
+              {{ entry.weight }} kg
+            </ion-note>
           </ion-item>
         </ion-list>
         <ion-list lines="none">
@@ -238,9 +238,10 @@ const menuItems = computed(() => [
             :button="true"
             @click="item.action"
           >
-            <template #start>
-              <ion-icon :icon="item.icon" />
-            </template>
+            <ion-icon
+              slot="start"
+              :icon="item.icon"
+            />
             <ion-label>{{ item.label }}</ion-label>
           </ion-item>
           <ion-item>

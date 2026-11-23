@@ -25,9 +25,10 @@ const { formattedTime, stopTimer, isRunning } = useRestTimer();
         color="light"
         @click="stopTimer"
       >
-        <template #icon-only>
-          <ion-icon :icon="closeOutline" />
-        </template>
+        <ion-icon
+          slot="icon-only"
+          :icon="closeOutline"
+        />
       </ion-button>
     </section>
   </transition>

@@ -171,16 +171,14 @@ const confirmDelete = async (program: Program) => {
     </ion-list>
 
     <!-- FAB for creating new program -->
-    <template #fab>
-      <ion-fab
-        slot="fixed"
-        vertical="bottom"
-        horizontal="end"
-      >
-        <ion-fab-button @click="openCreateModal">
-          <ion-icon :icon="add" />
-        </ion-fab-button>
-      </ion-fab>
-    </template>
+    <ion-fab
+      slot="fixed"
+      vertical="bottom"
+      horizontal="end"
+    >
+      <ion-fab-button @click="openCreateModal">
+        <ion-icon :icon="add" />
+      </ion-fab-button>
+    </ion-fab>
   </app-layout>
 </template>
